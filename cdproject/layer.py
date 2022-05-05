@@ -52,7 +52,9 @@ class CDLayer(QGraphicsItem):
     @material.setter
     def material(self, m):
         self._material = m
-        # TODO: Redraw everything
+        for item in self.childItems():
+            if item != self._substrate:
+                item.setBrush(self._material.getBrush())
 
     @property
     def thickness(self):
