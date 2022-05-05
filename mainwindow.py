@@ -99,13 +99,23 @@ class MainWindow(QMainWindow):
 
     def closeEvent(self, event: QCloseEvent) -> None:
         # TODO: Replace this entire thingy with a) checking if anything needs to be saved and b) then closing everything
-        d = QMessageBox.question(self, "Chip Drawer", "Are you sure you want to exit?",
-                                 QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+        if not self.undostack.isClean():
+            # The current project is not saved
+            d = QMessageBox.question(self, "Chip Drawer", "Do you want to save the project before closing it?",
+                                     QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No | QMessageBox.StandardButton.Cancel)
 
-        if d != QMessageBox.StandardButton.Yes:
-            event.ignore()
-        else:
-            event.accept()
+            if d == QMessageBox.StandardButton.Yes:
+                # We want to save
+                if not self.drawing_area.project_save():
+                    # In case saving was cancelled
+                    event.ignore()
+                    return
+            elif d == QMessageBox.StandardButton.Cancel:
+                # We don't want to leave the project
+                event.ignore()
+                return
+
+        event.accept()
 
     @pyqtSlot(bool)
     def project_clean_changed(self, clean):

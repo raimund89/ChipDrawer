@@ -5,6 +5,8 @@ from PyQt6.QtCore import QRectF, Qt
 from PyQt6.QtGui import QBrush, QPen
 from PyQt6.QtWidgets import QGraphicsItem, QGraphicsRectItem, QStyleOptionGraphicsItem, QWidget
 
+from buildingblocks import BLOCKITEMS
+
 DEFAULT_THICKNESS = 0.5
 
 
@@ -17,8 +19,6 @@ class CDLayer(QGraphicsItem):
         self._substrate = None
         self._material = project.theme.material(0)
         self._thickness = DEFAULT_THICKNESS
-
-        # self.setOpacity(0)
 
     @property
     def name(self):
@@ -90,3 +90,29 @@ class CDLayer(QGraphicsItem):
                 value.setBrush(self._material.getBrush())
 
         return super().itemChange(change, value)
+
+    def getData(self):
+        return {
+            'name': self.name,
+            'substrate': self.substrate,
+            'visible': self.isVisible(),
+            'thickness': self.thickness,
+            'material': self.material.name,
+            'items': [item.getData() for item in self.childItems() if item != self._substrate]
+        }
+
+    def loadData(self, data):
+        self.name = data['name']
+        self.substrate = data['substrate']
+        self.setVisible(data['visible'])
+        self.thickness = data['thickness']
+        self.material = self._project.theme.material(data['material'])[1]
+
+        for item in data['items']:
+            itm = BLOCKITEMS[item['type']]()
+            itm.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsSelectable, True)
+            itm.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsMovable, True)
+            itm.setFlag(QGraphicsItem.GraphicsItemFlag.ItemSendsGeometryChanges, True)
+            itm.setParentItem(self)
+            itm.loadData(item)
+            self._project.scene().addItem(itm)

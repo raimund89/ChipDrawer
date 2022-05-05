@@ -41,6 +41,9 @@ class CDBlockItem(QGraphicsPathItem):
     def createPath(self):
         raise NotImplementedError
 
+    def getData(self):
+        raise NotImplementedError
+
     def paint(self, painter: QPainter, option: 'QStyleOptionGraphicsItem',
               widget: typing.Optional[QWidget] = ...) -> None:
         painter.setBrush(self.brush())

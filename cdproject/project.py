@@ -1,10 +1,12 @@
 import math
 import os
 
+import yaml
 from PyQt6.QtCore import QEvent, QModelIndex, Qt, pyqtSlot
 from PyQt6.QtGui import QBrush, QEnterEvent, QIcon, QKeyEvent, QMouseEvent, QPainter, QPen, QPixmap
 from PyQt6.QtWidgets import QApplication, QFileDialog, QGraphicsRectItem, QGraphicsScene, QGraphicsView, \
     QMessageBox
+from yaml import CLoader
 
 from cdproject.commands import CDCommandAddLayer, CDCommandChangeChipHeight, CDCommandChangeChipMargins, \
     CDCommandChangeChipWidth, CDCommandItemAdd, CDCommandItemsMove, CDCommandLayerDown, CDCommandLayerMaterial, \
@@ -69,6 +71,7 @@ class CDProject(QGraphicsView):
     def setActiveLayer(self, row=0):
         self.parent().parent().layer_list.clicked.emit(self.layer_model.index(row, 2))
         self.parent().parent().layer_list.setCurrentIndex(self.layer_model.index(row, 2))
+        self._active_layer = row
 
     def setUndoStack(self, undostack):
         self.undostack = undostack
@@ -323,7 +326,6 @@ class CDProject(QGraphicsView):
         if self.floating_item:
             return
         elif self.scene().selectedItems():
-            print("We have selected items")
             # There are selected items. So save the current items and their current positions
             self.selected_items.clear()
             self.selected_items_old_positions.clear()
@@ -414,7 +416,7 @@ class CDProject(QGraphicsView):
     #                                                                         #
     ###########################################################################
 
-    def project_new(self):
+    def project_new(self, initempty=True):
         self.layer_model.beginResetModel()
         for layer in self.chip_layers:
             self.scene().removeItem(layer)
@@ -432,6 +434,7 @@ class CDProject(QGraphicsView):
         self.theme = self.themelist.getTheme("Default")
 
         # Load materials into the material properties list
+        self.parent().parent().layer_prop_material.clear()
         for i, material in enumerate(self.theme.materials()):
             self.parent().parent().layer_prop_material.addItem(icon_from_color(material.displayColor), material.name)
 
@@ -473,8 +476,9 @@ class CDProject(QGraphicsView):
         self.selection_moved = False
         self.selected_items_old_positions = []
 
-        self.initEmptyScene()
-        self.setActiveLayer(0)
+        if initempty:
+            self.initEmptyScene()
+            self.setActiveLayer(0)
 
         self.undostack.clear()
 
@@ -509,9 +513,22 @@ class CDProject(QGraphicsView):
 
             self.filename = file
 
-        successful = True
+        successful = False
 
-        print(file)
+        data = {
+            'theme': self.theme.name,
+            'layers': [
+                {
+                    'position': i,
+                    'content': layer.getData()
+                } for i, layer in enumerate(self.chip_layers)
+            ]
+        }
+
+        with open(file, "w") as f:
+            f.write(yaml.dump(data))
+
+        successful = True
 
         if not export and successful:
             if self.undostack.isClean():
@@ -526,4 +543,36 @@ class CDProject(QGraphicsView):
                                            filter="Chip Drawer Project (*.cdp)")[0]
 
         if file:
-            print("User selected a file!")
+            with open(file, "r") as f:
+                data = yaml.load(f.read(), Loader=CLoader)
+
+            if not data:
+                QMessageBox.warning(self.parent().parent(), "Error", "Failed to open the file",
+                                    QMessageBox.StandardButton.Ok)
+                return
+
+            self.project_new(False)
+
+            self.theme = self.themelist.getTheme(data['theme'])
+
+            # Load materials into the material properties list
+            self.parent().parent().layer_prop_material.clear()
+            for i, material in enumerate(self.theme.materials()):
+                self.parent().parent().layer_prop_material.addItem(icon_from_color(material.displayColor),
+                                                                   material.name)
+
+            data['layers'].sort(key=lambda x: x['position'])
+
+            self.layer_model.beginResetModel()
+            for i, layer in enumerate(data['layers']):
+                newlayer = CDLayer(self, layer['content']['name'])
+                self.chip_layers.append(newlayer)
+                self.scene().addItem(newlayer)
+                newlayer.loadData(layer['content'])
+                newlayer.setZValue(-i)
+
+            self.layer_model.endResetModel()
+
+            self.setActiveLayer(0)
+
+            self.recalcSnaps()

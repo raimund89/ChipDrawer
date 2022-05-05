@@ -59,10 +59,15 @@ class CDBlockStraight(CDBlockItem):
         self.setPath(p)
 
         # Now also update the handles
-        dpi = QApplication.instance().activeWindow().screen().physicalDotsPerInch()
-        # lasjdfljkasdl
-        hsize = QApplication.instance().activeWindow().drawing_area.mapToScene(
-            QPoint(int(dpi * 0.01 / 25.4), 0)).x()  # 25.4 mm/inch
+        try:
+            dpi = QApplication.instance().activeWindow().screen().physicalDotsPerInch()
+            # lasjdfljkasdl
+            # TODO: Implement this in the right way!
+            hsize = QApplication.instance().activeWindow().drawing_area.mapToScene(
+                QPoint(int(dpi * 0.01 / 25.4), 0)).x()  # 25.4 mm/inch
+        except AttributeError:
+            hsize = 0.02
+
         self.handles = [
             (Qt.CursorShape.SizeHorCursor if self.rotation() % 180 == 0 else Qt.CursorShape.SizeVerCursor,
              QRectF(-self._length / 2 - hsize / 2, -hsize / 2, hsize, hsize)),
@@ -91,6 +96,7 @@ class CDBlockStraight(CDBlockItem):
             for handle, rect in self.handles:
                 if self.handleSelected is None or handle == self.handleSelected:
                     painter.drawRect(rect)
+
     #
     # def boundingRect(self) -> QRectF:
     #     return super().boundingRect().adjusted(-0.04, -0.04, 0.04, 0.04)
@@ -144,6 +150,29 @@ class CDBlockStraight(CDBlockItem):
     #     self.prepareGeometryChange()
     #
     #     self.createPath()
+
+    # TODO: Support to name the data blocks
+    def getData(self):
+        return {
+            'name': 'Straight',
+            'type': 'straight',
+            'width': self._width,
+            'length': self._length,
+            'position': {
+                'x': self.pos().x(),
+                'y': self.pos().y()
+            },
+            'scale': self.scale(),
+            'rotation': self.rotation()
+        }
+
+    def loadData(self, data):
+        # TODO: Implement name
+        self.width = data['width']
+        self.length = data['length']
+        self.setPos(QPointF(data['position']['x'], data['position']['y']))
+        self.setScale(data['scale'])
+        self.setRotation(data['rotation'])
 
 
 class CDBlockBend(CDBlockItem):
@@ -205,6 +234,29 @@ class CDBlockBend(CDBlockItem):
         b.setRotation(self.rotation())
         b.setFlags(self.flags())
         return b
+
+    # TODO: Support to name the data blocks
+    def getData(self):
+        return {
+            'name': 'Bend',
+            'type': 'bend',
+            'width': self._width,
+            'radius': self._radius,
+            'position': {
+                'x': self.pos().x(),
+                'y': self.pos().y()
+            },
+            'scale': self.scale(),
+            'rotation': self.rotation()
+        }
+
+    def loadData(self, data):
+        # TODO: Implement name
+        self.width = data['width']
+        self.radius = data['radius']
+        self.setPos(QPointF(data['position']['x'], data['position']['y']))
+        self.setScale(data['scale'])
+        self.setRotation(data['rotation'])
 
 
 class CDBlockTaper(CDBlockItem):
@@ -272,3 +324,28 @@ class CDBlockTaper(CDBlockItem):
         b.setRotation(self.rotation())
         b.setFlags(self.flags())
         return b
+
+    # TODO: Support to name the data blocks
+    def getData(self):
+        return {
+            'name': 'Taper',
+            'type': 'taper',
+            'width1': self._width1,
+            'width2': self._width2,
+            'length': self._length,
+            'position': {
+                'x': self.pos().x(),
+                'y': self.pos().y()
+            },
+            'scale': self.scale(),
+            'rotation': self.rotation()
+        }
+
+    def loadData(self, data):
+        # TODO: Implement name
+        self.width1 = data['width1']
+        self.width2 = data['width2']
+        self.length = data['length']
+        self.setPos(QPointF(data['position']['x'], data['position']['y']))
+        self.setScale(data['scale'])
+        self.setRotation(data['rotation'])

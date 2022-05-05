@@ -317,8 +317,6 @@ class CDCommandItemAdd(QUndoCommand):
     def __init__(self, project, ilayer, item):
         super().__init__(f"Add item")
 
-        print(project, ilayer, item)
-
         self.project = project
         self.layer = ilayer
         self.item = item
