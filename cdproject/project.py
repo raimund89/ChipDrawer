@@ -25,66 +25,29 @@ def icon_from_color(c):
 class CDProject(QGraphicsView):
     def __init__(self, parent):
         super().__init__(parent)
+        self.theme = None
+        self.themelist = None
+        self.chip_margin = None
+        self.chip_height = None
+        self.chip_width = None
+        self.chip_layers = []
+        self.selected_items_old_positions = []
+        self.selection_moved = None
+        self.selected_items = []
+        self.snaplist = []
+        self.floating_item = None
+        self.zoom_total = None
+        self.chip_outline = None
+        self.background = None
         self.undostack = None
 
         self.layer_model = LayerModel(None, self)
         self._active_layer = -1
 
-        # TODO: Change this to adhere to the defaults in the settings file
-        self.chip_width = parent.parent().spinner_width.value()
-        self.chip_height = parent.parent().spinner_height.value()
-        self.chip_margin = parent.parent().spinner_margins.value()
-        self.chip_layers = []
-
-        # TODO: Allow user to change the theme
-        self.themelist = CDThemeList(os.path.dirname(parent.parent().settings.fileName()))
-        self.theme = self.themelist.getTheme("Default")
-
-        # Load materials into the material properties list
-        for i, material in enumerate(self.theme.materials()):
-            self.parent().parent().layer_prop_material.addItem(icon_from_color(material.displayColor), material.name)
-
-        # Install scene, and set some scene properties
-        self.scene = QGraphicsScene(-self.chip_margin,
-                                    -self.chip_margin,
-                                    self.chip_width + 2 * self.chip_margin,
-                                    self.chip_height + 2 * self.chip_margin)
-        self.setScene(self.scene)
-
-        # Set the background item
-        self.background = QGraphicsRectItem(0, 0, 1, 1)
-        self.background.setBrush(QBrush(Qt.GlobalColor.white))
-        self.background.setPen(QPen(Qt.PenStyle.NoPen))
-        self.background.setZValue(-1000)
-        self.scene.addItem(self.background)
-
-        # Set the chip outline item
-        self.chip_outline = QGraphicsRectItem(0, 0, 1, 1)
-        self.chip_outline.setBrush(QBrush(Qt.BrushStyle.NoBrush))
-        self.chip_outline.setPen(QPen(QBrush(Qt.GlobalColor.black), 0.01, Qt.PenStyle.DashLine))
-        self.chip_outline.setZValue(10)
-        self.scene.addItem(self.chip_outline)
-
-        self.setOutlines()
-
-        # Set scene selection properties
-        self.setRenderHint(QPainter.RenderHint.Antialiasing)
-        self.setDragMode(QGraphicsView.DragMode.RubberBandDrag)
-        self.setRubberBandSelectionMode(Qt.ItemSelectionMode.ContainsItemShape)
-
-        # Zooming factor
-        self.zoom_total = 1
-
-        # Mouse stuff
-        self.floating_item = None
-        self.snaplist = []
-
-        self.selected_items = []
-        self.selection_moved = False
-        self.selected_items_old_positions = []
-
         self.verticalScrollBar().valueChanged.connect(self.recalcSnaps)
         self.horizontalScrollBar().valueChanged.connect(self.recalcSnaps)
+
+        self.project_new()
 
     def initEmptyScene(self):
         # Add the first layer by default
@@ -95,7 +58,7 @@ class CDProject(QGraphicsView):
         layer.material = self.theme.material(0)
         layer.setZValue(0)
         self.chip_layers.insert(0, layer)
-        self.scene.addItem(layer)
+        self.scene().addItem(layer)
         self.layer_model.endResetModel()
 
         # Hack to fix a Z-value issue: without these two lines, the Z-value of the first layer substrate is not
@@ -131,10 +94,10 @@ class CDProject(QGraphicsView):
             self.floating_item = block()
             self.floating_item.setZValue(1000)
             self.floating_item.setVisible(False)
-            self.scene.addItem(self.floating_item)
+            self.scene().addItem(self.floating_item)
         else:
             if self.floating_item:
-                self.scene.removeItem(self.floating_item)
+                self.scene().removeItem(self.floating_item)
                 self.floating_item = None
 
     ###########################################################################
@@ -254,12 +217,12 @@ class CDProject(QGraphicsView):
         self.recalcSnaps()
 
     def recalcSnaps(self):
-        templist = []
+        temp_list = []
         for layer in self.chip_layers:
-            templist += layer.getSnaps()
+            temp_list += layer.getSnaps()
 
         self.snaplist.clear()
-        for snap in templist:
+        for snap in temp_list:
             self.snaplist.append(self.mapFromScene(snap))
 
     def resizeEvent(self, event) -> None:
@@ -279,23 +242,23 @@ class CDProject(QGraphicsView):
             self.setResizeAnchor(QGraphicsView.ViewportAnchor.NoAnchor)
 
             # Save the scene pos
-            oldPos = self.mapToScene(event.position().toPoint())
+            old_pos = self.mapToScene(event.position().toPoint())
 
             # Zoom
             if event.angleDelta().y() > 0:
-                zoomFactor = 1.25
+                zoom_factor = 1.25
             else:
-                zoomFactor = 0.8
+                zoom_factor = 0.8
 
-            self.scale(zoomFactor, zoomFactor)
+            self.scale(zoom_factor, zoom_factor)
 
             # Get the new position
-            newPos = self.mapToScene(event.position().toPoint())
+            new_pos = self.mapToScene(event.position().toPoint())
 
-            self.zoom_total *= zoomFactor
+            self.zoom_total *= zoom_factor
 
             # Move scene to old position
-            delta = newPos - oldPos
+            delta = new_pos - old_pos
             self.translate(delta.x(), delta.y())
 
         elif modifiers == Qt.KeyboardModifier.ShiftModifier:
@@ -339,11 +302,11 @@ class CDProject(QGraphicsView):
             if coords:
                 self.floating_item.snapTo(*coords)
             return
-        elif not self.scene.selectedItems() and event.buttons() == Qt.MouseButton.LeftButton and self.selected_items:
+        elif not self.scene().selectedItems() and event.buttons() == Qt.MouseButton.LeftButton and self.selected_items:
             self.selected_items.clear()
             self.selected_items_old_positions.clear()
-        elif self.scene.selectedItems() and not self.selected_items:
-            for item in self.scene.selectedItems():
+        elif self.scene().selectedItems() and not self.selected_items:
+            for item in self.scene().selectedItems():
                 self.selected_items.append(item)
                 self.selected_items_old_positions.append(item.pos())
         elif self.selected_items and event.buttons() == Qt.MouseButton.LeftButton:
@@ -359,13 +322,13 @@ class CDProject(QGraphicsView):
     def mousePressEvent(self, event: QMouseEvent) -> None:
         if self.floating_item:
             return
-        elif self.scene.selectedItems():
+        elif self.scene().selectedItems():
             print("We have selected items")
             # There are selected items. So save the current items and their current positions
             self.selected_items.clear()
             self.selected_items_old_positions.clear()
 
-            for item in self.scene.selectedItems():
+            for item in self.scene().selectedItems():
                 self.selected_items.append(item)
                 self.selected_items_old_positions.append(item.pos())
 
@@ -444,3 +407,68 @@ class CDProject(QGraphicsView):
     @pyqtSlot()
     def signal_select_all(self):
         pass
+
+    ###########################################################################
+    #                                                                         #
+    #  Loading and saving                                                     #
+    #                                                                         #
+    ###########################################################################
+
+    def project_new(self):
+        self.layer_model.beginResetModel()
+        for layer in self.chip_layers:
+            self.scene().removeItem(layer)
+        self.chip_layers = []
+        self.layer_model.endResetModel()
+
+        # TODO: Change this to adhere to the defaults in the settings file
+        self.chip_width = self.parent().parent().spinner_width.value()
+        self.chip_height = self.parent().parent().spinner_height.value()
+        self.chip_margin = self.parent().parent().spinner_margins.value()
+        self.chip_layers = []
+
+        # TODO: Allow user to change the theme
+        self.themelist = CDThemeList(os.path.dirname(self.parent().parent().settings.fileName()))
+        self.theme = self.themelist.getTheme("Default")
+
+        # Load materials into the material properties list
+        for i, material in enumerate(self.theme.materials()):
+            self.parent().parent().layer_prop_material.addItem(icon_from_color(material.displayColor), material.name)
+
+        # Install scene, and set some scene properties
+        self.setScene(QGraphicsScene(-self.chip_margin,
+                                     -self.chip_margin,
+                                     self.chip_width + 2 * self.chip_margin,
+                                     self.chip_height + 2 * self.chip_margin))
+
+        # Set the background item
+        self.background = QGraphicsRectItem(0, 0, 1, 1)
+        self.background.setBrush(QBrush(Qt.GlobalColor.white))
+        self.background.setPen(QPen(Qt.PenStyle.NoPen))
+        self.background.setZValue(-1000)
+        self.scene().addItem(self.background)
+
+        # Set the chip outline item
+        self.chip_outline = QGraphicsRectItem(0, 0, 1, 1)
+        self.chip_outline.setBrush(QBrush(Qt.BrushStyle.NoBrush))
+        self.chip_outline.setPen(QPen(QBrush(Qt.GlobalColor.black), 0.01, Qt.PenStyle.DashLine))
+        self.chip_outline.setZValue(10)
+        self.scene().addItem(self.chip_outline)
+
+        self.setOutlines()
+
+        # Set scene selection properties
+        self.setRenderHint(QPainter.RenderHint.Antialiasing)
+        self.setDragMode(QGraphicsView.DragMode.RubberBandDrag)
+        self.setRubberBandSelectionMode(Qt.ItemSelectionMode.ContainsItemShape)
+
+        # Zooming factor
+        self.zoom_total = 1
+
+        # Mouse stuff
+        self.floating_item = None
+        self.snaplist = []
+
+        self.selected_items = []
+        self.selection_moved = False
+        self.selected_items_old_positions = []

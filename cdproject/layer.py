@@ -39,10 +39,10 @@ class CDLayer(QGraphicsItem):
             self._substrate.setBrush(QBrush(Qt.GlobalColor.blue))
             self._substrate.setPen(QPen(Qt.PenStyle.NoPen))
             self._substrate.setZValue(-20)
-            self._project.scene.addItem(self._substrate)
+            self._project.scene().addItem(self._substrate)
         else:
             if self._substrate:
-                self._project.scene.removeItem(self._substrate)
+                self._project.scene().removeItem(self._substrate)
                 self._substrate = None
 
     @property

@@ -26,7 +26,7 @@ class CDCommandAddLayer(QUndoCommand):
         layer.material = self.material
 
         self.project.chip_layers.insert(self.position, layer)
-        self.project.scene.addItem(self.project.chip_layers[self.position])
+        self.project.scene().addItem(self.project.chip_layers[self.position])
 
         for i, layer in enumerate(self.project.chip_layers):
             layer.setZValue(-i)
@@ -37,7 +37,7 @@ class CDCommandAddLayer(QUndoCommand):
     def undo(self) -> None:
         self.project.layer_model.beginResetModel()
 
-        self.project.scene.removeItem(self.project.chip_layers[self.position])
+        self.project.scene().removeItem(self.project.chip_layers[self.position])
         self.project.chip_layers.pop(self.position)
 
         for i, layer in enumerate(self.project.chip_layers):
@@ -61,7 +61,7 @@ class CDCommandRemoveLayer(QUndoCommand):
 
         self.layer = self.project.chip_layers[self.position]
 
-        self.project.scene.removeItem(self.project.chip_layers[self.position])
+        self.project.scene().removeItem(self.project.chip_layers[self.position])
         self.project.chip_layers.pop(self.position)
 
         for i, layer in enumerate(self.project.chip_layers):
@@ -74,7 +74,7 @@ class CDCommandRemoveLayer(QUndoCommand):
         self.project.layer_model.beginResetModel()
 
         self.project.chip_layers.insert(self.position, self.layer)
-        self.project.scene.addItem(self.project.chip_layers[self.position])
+        self.project.scene().addItem(self.project.chip_layers[self.position])
 
         for i, layer in enumerate(self.project.chip_layers):
             layer.setZValue(-i)
@@ -329,11 +329,11 @@ class CDCommandItemAdd(QUndoCommand):
 
     def redo(self) -> None:
         self.item.setParentItem(self.project.chip_layers[self.layer])
-        self.project.scene.addItem(self.item)
+        self.project.scene().addItem(self.item)
         self.project.recalcSnaps()
 
     def undo(self) -> None:
-        self.project.scene.removeItem(self.item)
+        self.project.scene().removeItem(self.item)
         self.project.recalcSnaps()
 
 

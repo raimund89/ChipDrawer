@@ -2,7 +2,7 @@ import os
 
 from PyQt6 import uic
 from PyQt6.QtCore import QModelIndex, pyqtSlot
-from PyQt6.QtGui import QCloseEvent, QShowEvent, QUndoStack
+from PyQt6.QtGui import QCloseEvent, QUndoStack
 from PyQt6.QtWidgets import QMainWindow, QMessageBox
 
 from CDItemDelegate import CDItemDelegate
@@ -13,8 +13,6 @@ class MainWindow(QMainWindow):
     def __init__(self, settings):
         super().__init__()
         self.settings = settings
-
-        self.firstShow = True
 
         # loading the ui file with uic module
         uic.loadUi("layouts/mainwindow.ui", self)
@@ -36,8 +34,12 @@ class MainWindow(QMainWindow):
         self.btn_add_layer.setProperty('class', 'success')
         self.btn_remove_layer.setProperty('class', 'danger')
 
-        self.layer_list.setModel(self.drawing_area.layer_model)
         self.layer_list.setItemDelegate(CDItemDelegate(self.layer_list))
+
+        self.layer_list.setModel(self.drawing_area.layer_model)
+
+        self.drawing_area.initEmptyScene()
+        self.drawing_area.setActiveLayer(0)
 
         self.showMaximized()
 
@@ -69,12 +71,12 @@ class MainWindow(QMainWindow):
     def signal_open(self):
         pass
 
-    def showEvent(self, a0: QShowEvent) -> None:
-        if self.firstShow:
-            self.firstShow = False
+    @pyqtSlot()
+    def signal_new(self):
+        self.drawing_area.project_new()
 
-            self.drawing_area.initEmptyScene()
-            self.drawing_area.setActiveLayer(0)
+        self.drawing_area.initEmptyScene()
+        self.drawing_area.setActiveLayer(0)
 
     def closeEvent(self, event: QCloseEvent) -> None:
         # TODO: Replace this entire thingy with a) checking if anything needs to be saved and b) then closing everything
