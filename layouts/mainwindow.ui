@@ -836,7 +836,7 @@
   </connection>
   <connection>
    <sender>layer_prop_material</sender>
-   <signal>currentIndexChanged(int)</signal>
+   <signal>activated(int)</signal>
    <receiver>drawing_area</receiver>
    <slot>signal_layer_changed_material(int)</slot>
    <hints>

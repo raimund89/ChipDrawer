@@ -47,8 +47,6 @@ class CDProject(QGraphicsView):
         self.verticalScrollBar().valueChanged.connect(self.recalcSnaps)
         self.horizontalScrollBar().valueChanged.connect(self.recalcSnaps)
 
-        self.project_new()
-
     def initEmptyScene(self):
         # Add the first layer by default
         self.layer_model.beginResetModel()
@@ -472,3 +470,8 @@ class CDProject(QGraphicsView):
         self.selected_items = []
         self.selection_moved = False
         self.selected_items_old_positions = []
+
+        self.initEmptyScene()
+        self.setActiveLayer(0)
+
+        self.undostack.clear()

@@ -38,8 +38,7 @@ class MainWindow(QMainWindow):
 
         self.layer_list.setModel(self.drawing_area.layer_model)
 
-        self.drawing_area.initEmptyScene()
-        self.drawing_area.setActiveLayer(0)
+        self.drawing_area.project_new()
 
         self.showMaximized()
 
@@ -74,9 +73,6 @@ class MainWindow(QMainWindow):
     @pyqtSlot()
     def signal_new(self):
         self.drawing_area.project_new()
-
-        self.drawing_area.initEmptyScene()
-        self.drawing_area.setActiveLayer(0)
 
     def closeEvent(self, event: QCloseEvent) -> None:
         # TODO: Replace this entire thingy with a) checking if anything needs to be saved and b) then closing everything
