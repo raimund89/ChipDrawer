@@ -26,7 +26,6 @@ from mainwindow import MainWindow
 # TODO: Snapping gives small gaps between objects.
 # TODO: Add tooltip to the building blocks
 # TODO: Snap to vertical and horizontal lines that give alignment with other objects
-# TODO: Change window title on undostack clean state
 
 extra = {
     # Button colors

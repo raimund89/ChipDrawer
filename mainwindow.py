@@ -27,6 +27,7 @@ class MainWindow(QMainWindow):
         redo.setShortcut('Ctrl+Y')
         self.menu_Edit.insertAction(self.menu_Edit.actions()[0], undo)
         self.menu_Edit.insertAction(self.menu_Edit.actions()[1], redo)
+        self.undostack.cleanChanged.connect(self.project_clean_changed)
 
         # Pass the undostack on to the project
         self.drawing_area.setUndoStack(self.undostack)
@@ -39,6 +40,7 @@ class MainWindow(QMainWindow):
         self.layer_list.setModel(self.drawing_area.layer_model)
 
         self.drawing_area.project_new()
+        self.undostack.cleanChanged.emit(False)
 
         self.showMaximized()
 
@@ -104,3 +106,8 @@ class MainWindow(QMainWindow):
             event.ignore()
         else:
             event.accept()
+
+    @pyqtSlot(bool)
+    def project_clean_changed(self, clean):
+        self.setWindowTitle(
+            f"Chip Drawer - {self.drawing_area.filename if self.drawing_area.filename else 'Untitled'}{'' if clean else '*'}")

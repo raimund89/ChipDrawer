@@ -509,12 +509,15 @@ class CDProject(QGraphicsView):
 
             self.filename = file
 
-        successful = False
+        successful = True
 
         print(file)
 
         if not export and successful:
-            self.undostack.setClean()
+            if self.undostack.isClean():
+                self.undostack.cleanChanged.emit(True)
+            else:
+                self.undostack.setClean()
 
     def project_open(self):
         file = QFileDialog.getOpenFileName(parent=self.parent().parent(),
