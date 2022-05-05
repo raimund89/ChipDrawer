@@ -3,7 +3,7 @@ import os
 
 from PyQt6.QtCore import QEvent, QModelIndex, Qt, pyqtSlot
 from PyQt6.QtGui import QBrush, QEnterEvent, QIcon, QKeyEvent, QMouseEvent, QPainter, QPen, QPixmap
-from PyQt6.QtWidgets import QApplication, QGraphicsRectItem, QGraphicsScene, QGraphicsView, \
+from PyQt6.QtWidgets import QApplication, QFileDialog, QGraphicsRectItem, QGraphicsScene, QGraphicsView, \
     QMessageBox
 
 from cdproject.commands import CDCommandAddLayer, CDCommandChangeChipHeight, CDCommandChangeChipMargins, \
@@ -40,6 +40,8 @@ class CDProject(QGraphicsView):
         self.chip_outline = None
         self.background = None
         self.undostack = None
+
+        self.filename = None
 
         self.layer_model = LayerModel(None, self)
         self._active_layer = -1
@@ -475,3 +477,50 @@ class CDProject(QGraphicsView):
         self.setActiveLayer(0)
 
         self.undostack.clear()
+
+    def project_save(self, export=False, saveas=False):
+        file = None
+        if export:
+            file = QFileDialog.getSaveFileName(parent=self.parent().parent(),
+                                               caption="Export Chip Drawer project",
+                                               directory=self.parent().parent().settings.value("default_directory"),
+                                               filter="Chip Drawer Project (*.cdp)")[0]
+            if not file:
+                return
+        elif saveas:
+            file = QFileDialog.getSaveFileName(parent=self.parent().parent(),
+                                               caption="Save Chip Drawer project as...",
+                                               directory=self.parent().parent().settings.value("default_directory"),
+                                               filter="Chip Drawer Project (*.cdp)")[0]
+            if not file:
+                return
+
+            self.filename = file
+        elif self.filename:
+            file = self.filename
+
+        if not file:
+            file = QFileDialog.getSaveFileName(parent=self.parent().parent(),
+                                               caption="Save Chip Drawer project...",
+                                               directory=self.parent().parent().settings.value("default_directory"),
+                                               filter="Chip Drawer Project (*.cdp)")[0]
+            if not file:
+                return
+
+            self.filename = file
+
+        successful = False
+
+        print(file)
+
+        if not export and successful:
+            self.undostack.setClean()
+
+    def project_open(self):
+        file = QFileDialog.getOpenFileName(parent=self.parent().parent(),
+                                           caption="Open Chip Drawer project...",
+                                           directory=self.parent().parent().settings.value("default_directory"),
+                                           filter="Chip Drawer Project (*.cdp)")[0]
+
+        if file:
+            print("User selected a file!")

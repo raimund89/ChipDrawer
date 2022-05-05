@@ -994,6 +994,38 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>action_Open</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>signal_open()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>825</x>
+     <y>509</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>action_SaveAs</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>signal_save_as()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>825</x>
+     <y>509</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>signal_add_layer()</slot>
@@ -1005,5 +1037,6 @@
   <slot>signal_export()</slot>
   <slot>signal_open()</slot>
   <slot>signal_new()</slot>
+  <slot>signal_save_as()</slot>
  </slots>
 </ui>

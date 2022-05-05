@@ -1,7 +1,7 @@
 import os
 
 from PyQt6 import uic
-from PyQt6.QtCore import QModelIndex, pyqtSlot
+from PyQt6.QtCore import pyqtSlot
 from PyQt6.QtGui import QCloseEvent, QUndoStack
 from PyQt6.QtWidgets import QMainWindow, QMessageBox
 
@@ -43,35 +43,56 @@ class MainWindow(QMainWindow):
         self.showMaximized()
 
     @pyqtSlot()
-    def signal_add_layer(self):
-        pass
-
-    @pyqtSlot()
-    def signal_remove_layer(self):
-        pass
-
-    @pyqtSlot(QModelIndex)
-    def signal_layer_clicked(self, index):
-        pass
-
-    @pyqtSlot()
     def signal_show_3d(self):
         pass
 
     @pyqtSlot()
     def signal_save(self):
-        pass
+        self.drawing_area.project_save()
+
+    @pyqtSlot()
+    def signal_save_as(self):
+        self.drawing_area.project_save(saveas=True)
 
     @pyqtSlot()
     def signal_export(self):
-        pass
+        self.drawing_area.project_save(export=True)
 
     @pyqtSlot()
     def signal_open(self):
-        pass
+        if not self.undostack.isClean():
+            # The current project is not saved
+            d = QMessageBox.question(self, "Chip Drawer", "Do you want to save the project before closing it?",
+                                     QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No | QMessageBox.StandardButton.Cancel)
+
+            if d == QMessageBox.StandardButton.Yes:
+                # We want to save
+                if not self.drawing_area.project_save():
+                    # In case saving was cancelled
+                    return
+            elif d == QMessageBox.StandardButton.Cancel:
+                # We don't want to leave the project
+                return
+
+        self.drawing_area.project_open()
 
     @pyqtSlot()
     def signal_new(self):
+        if not self.undostack.isClean():
+            # The current project is not saved
+            d = QMessageBox.question(self, "Chip Drawer", "Do you want to save the project before closing it?",
+                                     QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No | QMessageBox.StandardButton.Cancel)
+
+            if d == QMessageBox.StandardButton.Yes:
+                # We want to save
+                if not self.drawing_area.project_save():
+                    # In case saving was cancelled
+                    return
+            elif d == QMessageBox.StandardButton.Cancel:
+                # We don't want to leave the project
+                return
+
+        # In case we either saved successfully, or don't want to save: start a new project
         self.drawing_area.project_new()
 
     def closeEvent(self, event: QCloseEvent) -> None:

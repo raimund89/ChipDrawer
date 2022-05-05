@@ -9,7 +9,6 @@ class CDCommandAddLayer(QUndoCommand):
         super().__init__(f"Add layer {name}")
 
         self.project = project
-        print(self.project.scene)
 
         self.position = position
         self.name = name

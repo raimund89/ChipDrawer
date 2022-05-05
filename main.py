@@ -7,12 +7,10 @@ from qt_material import apply_stylesheet
 
 from mainwindow import MainWindow
 
-# TODO: Implement undo and redo actions
 # TODO: Project saving/loading
 # TODO: Programmatically load blocks from file
 # TODO: Show materials dialog to choose the correct material
 # TODO: Load a theme from file including the material properties
-# TODO: Scaling items without scaling the pen size
 # TODO: Scaling and rotating items using handles
 # TODO: Rotate a group of items
 # TODO: Scale a group of items
@@ -28,6 +26,7 @@ from mainwindow import MainWindow
 # TODO: Snapping gives small gaps between objects.
 # TODO: Add tooltip to the building blocks
 # TODO: Snap to vertical and horizontal lines that give alignment with other objects
+# TODO: Change window title on undostack clean state
 
 extra = {
     # Button colors
