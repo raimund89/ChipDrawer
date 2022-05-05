@@ -7,12 +7,15 @@ from PyQt6.QtWidgets import QMainWindow, QMessageBox
 
 from CDItemDelegate import CDItemDelegate
 from buildingblocks import CDBuildingBlockList
+from cd3dviewer import CD3DViewer
 
 
 class MainWindow(QMainWindow):
     def __init__(self, settings):
         super().__init__()
         self.settings = settings
+
+        self.viewer3d = None
 
         # loading the ui file with uic module
         uic.loadUi("layouts/mainwindow.ui", self)
@@ -28,6 +31,7 @@ class MainWindow(QMainWindow):
         self.menu_Edit.insertAction(self.menu_Edit.actions()[0], undo)
         self.menu_Edit.insertAction(self.menu_Edit.actions()[1], redo)
         self.undostack.cleanChanged.connect(self.project_clean_changed)
+        self.undostack.indexChanged.connect(self.project_index_changed)
 
         # Pass the undostack on to the project
         self.drawing_area.setUndoStack(self.undostack)
@@ -46,7 +50,7 @@ class MainWindow(QMainWindow):
 
     @pyqtSlot()
     def signal_show_3d(self):
-        pass
+        self.viewer3d = CD3DViewer(self, project=self.drawing_area)
 
     @pyqtSlot()
     def signal_save(self):
@@ -121,3 +125,8 @@ class MainWindow(QMainWindow):
     def project_clean_changed(self, clean):
         self.setWindowTitle(
             f"Chip Drawer - {self.drawing_area.filename if self.drawing_area.filename else 'Untitled'}{'' if clean else '*'}")
+
+    @pyqtSlot(int)
+    def project_index_changed(self, index):
+        if self.viewer3d:
+            self.viewer3d.updateChip()

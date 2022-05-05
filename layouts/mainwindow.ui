@@ -1026,6 +1026,22 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>action_3D</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>signal_show_3d()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>825</x>
+     <y>509</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>signal_add_layer()</slot>

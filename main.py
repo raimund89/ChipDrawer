@@ -25,6 +25,7 @@ from mainwindow import MainWindow
 # TODO: Add tooltip to the building blocks
 # TODO: Snap to vertical and horizontal lines that give alignment with other objects
 # TODO: Remove _active_layer property, rely completely on the QTableView selected item info
+# TODO: Remove the parent().parent() calls that we regularly make right now
 
 extra = {
     # Button colors

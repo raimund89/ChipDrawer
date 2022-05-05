@@ -52,9 +52,12 @@ class CDTheme:
 
         self._name = data['name']
 
+        self._substrate3d = data['substrate']
+
         self.material_list = []
         for material in data['materials']:
-            self.material_list.append(CDMaterial(material['name'], QColor(material['color']), material['description']))
+            self.material_list.append(
+                CDMaterial(material['name'], QColor(material['color']), material['description'], material['3d']))
 
     @property
     def name(self):
@@ -71,3 +74,7 @@ class CDTheme:
                 if material.name == i:
                     return n, material
             return None
+
+    @property
+    def substrate3d(self):
+        return self._substrate3d
