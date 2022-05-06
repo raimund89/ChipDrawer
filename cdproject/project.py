@@ -9,7 +9,8 @@ from PyQt6.QtWidgets import QApplication, QFileDialog, QGraphicsRectItem, QGraph
 from yaml import CLoader
 
 from cdproject.commands import CDCommandAddLayer, CDCommandChangeChipHeight, CDCommandChangeChipMargins, \
-    CDCommandChangeChipWidth, CDCommandItemAdd, CDCommandItemsMove, CDCommandLayerDown, CDCommandLayerMaterial, \
+    CDCommandChangeChipWidth, CDCommandItemAdd, CDCommandItemsMove, CDCommandLayerBackgroundMaterial, \
+    CDCommandLayerDown, CDCommandLayerMaterial, \
     CDCommandLayerName, \
     CDCommandLayerSubstrate, CDCommandLayerThickness, CDCommandLayerUp, CDCommandLayerVisibility, CDCommandRemoveLayer
 from cdproject.layer import CDLayer
@@ -146,6 +147,8 @@ class CDProject(QGraphicsView):
             self.parent().parent().layer_prop_name.setText(self.chip_layers[row].name)
             self.parent().parent().layer_prop_material.setCurrentIndex(
                 self.theme.material(self.chip_layers[row].material.name)[0])
+            self.parent().parent().layer_prop_background_material.setCurrentIndex(
+                self.theme.material(self.chip_layers[row].background_material.name)[0])
             self.parent().parent().layer_prop_visible.setCheckState(
                 Qt.CheckState.Checked if self.chip_layers[row].isVisible() else Qt.CheckState.Unchecked)
             self.parent().parent().layer_prop_substrate.setCheckState(
@@ -155,6 +158,7 @@ class CDProject(QGraphicsView):
         else:
             self.parent().parent().layer_prop_name.setText("")
             self.parent().parent().layer_prop_material.setCurrentIndex(0)
+            self.parent().parent().layer_prop_background_material.setCurrentIndex(0)
             self.parent().parent().layer_prop_visible.setCheckState(Qt.CheckState.Unchecked)
             self.parent().parent().layer_prop_substrate.setCheckState(Qt.CheckState.Unchecked)
             self.parent().parent().layer_prop_thickness.setValue(0.0)
@@ -163,6 +167,11 @@ class CDProject(QGraphicsView):
     @pyqtSlot(int)
     def signal_layer_changed_material(self, m):
         self.undostack.push(CDCommandLayerMaterial(self, self._active_layer, self.theme.material(m)))
+
+    @pyqtSlot(int)
+    def signal_layer_changed_background_material(self, m):
+        # TODO: In the TableView, show both colors (two squares)
+        self.undostack.push(CDCommandLayerBackgroundMaterial(self, self._active_layer, self.theme.material(m)))
 
     @pyqtSlot()
     def signal_layer_changed_name(self):
@@ -437,6 +446,10 @@ class CDProject(QGraphicsView):
         self.parent().parent().layer_prop_material.clear()
         for i, material in enumerate(self.theme.materials()):
             self.parent().parent().layer_prop_material.addItem(icon_from_color(material.displayColor), material.name)
+        self.parent().parent().layer_prop_background_material.clear()
+        for i, material in enumerate(self.theme.materials()):
+            self.parent().parent().layer_prop_background_material.addItem(icon_from_color(material.displayColor),
+                                                                          material.name)
 
         # Install scene, and set some scene properties
         self.setScene(QGraphicsScene(-self.chip_margin,
@@ -560,6 +573,10 @@ class CDProject(QGraphicsView):
             for i, material in enumerate(self.theme.materials()):
                 self.parent().parent().layer_prop_material.addItem(icon_from_color(material.displayColor),
                                                                    material.name)
+            self.parent().parent().layer_prop_background_material.clear()
+            for i, material in enumerate(self.theme.materials()):
+                self.parent().parent().layer_prop_background_material.addItem(icon_from_color(material.displayColor),
+                                                                              material.name)
 
             data['layers'].sort(key=lambda x: x['position'])
 

@@ -214,25 +214,32 @@
             <string>Layer Properties</string>
            </property>
            <layout class="QGridLayout" name="gridLayout_8">
+            <item row="1" column="1">
+             <widget class="QComboBox" name="layer_prop_material"/>
+            </item>
             <item row="4" column="0">
-             <widget class="QLabel" name="label_10">
+             <widget class="QLabel" name="label_11">
               <property name="text">
-               <string>Thickness</string>
+               <string>Substrate</string>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="1">
+             <widget class="QCheckBox" name="layer_prop_visible">
+              <property name="text">
+               <string/>
               </property>
              </widget>
             </item>
             <item row="0" column="1">
              <widget class="QLineEdit" name="layer_prop_name"/>
             </item>
-            <item row="0" column="0">
-             <widget class="QLabel" name="label_7">
+            <item row="5" column="0">
+             <widget class="QLabel" name="label_10">
               <property name="text">
-               <string>Name</string>
+               <string>Thickness</string>
               </property>
              </widget>
-            </item>
-            <item row="1" column="1">
-             <widget class="QComboBox" name="layer_prop_material"/>
             </item>
             <item row="1" column="0">
              <widget class="QLabel" name="label_8">
@@ -242,35 +249,38 @@
              </widget>
             </item>
             <item row="4" column="1">
-             <widget class="QDoubleSpinBox" name="layer_prop_thickness"/>
+             <widget class="QCheckBox" name="layer_prop_substrate">
+              <property name="text">
+               <string/>
+              </property>
+             </widget>
             </item>
-            <item row="2" column="0">
+            <item row="0" column="0">
+             <widget class="QLabel" name="label_7">
+              <property name="text">
+               <string>Name</string>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="0">
              <widget class="QLabel" name="label_9">
               <property name="text">
                <string>Visible</string>
               </property>
              </widget>
             </item>
+            <item row="5" column="1">
+             <widget class="QDoubleSpinBox" name="layer_prop_thickness"/>
+            </item>
+            <item row="2" column="0">
+             <widget class="QLabel" name="label_12">
+              <property name="text">
+               <string>Background Material</string>
+              </property>
+             </widget>
+            </item>
             <item row="2" column="1">
-             <widget class="QCheckBox" name="layer_prop_visible">
-              <property name="text">
-               <string/>
-              </property>
-             </widget>
-            </item>
-            <item row="3" column="0">
-             <widget class="QLabel" name="label_11">
-              <property name="text">
-               <string>Substrate</string>
-              </property>
-             </widget>
-            </item>
-            <item row="3" column="1">
-             <widget class="QCheckBox" name="layer_prop_substrate">
-              <property name="text">
-               <string/>
-              </property>
-             </widget>
+             <widget class="QComboBox" name="layer_prop_background_material"/>
             </item>
            </layout>
           </widget>
@@ -637,6 +647,7 @@
     <slot>signal_layer_changed_thickness()</slot>
     <slot>signal_layer_up()</slot>
     <slot>signal_layer_down()</slot>
+    <slot>signal_layer_changed_background_material(int)</slot>
    </slots>
   </customwidget>
  </customwidgets>
@@ -1039,6 +1050,22 @@
     <hint type="destinationlabel">
      <x>825</x>
      <y>509</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>layer_prop_background_material</sender>
+   <signal>activated(int)</signal>
+   <receiver>drawing_area</receiver>
+   <slot>signal_layer_changed_background_material(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>267</x>
+     <y>886</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>835</x>
+     <y>530</y>
     </hint>
    </hints>
   </connection>

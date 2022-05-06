@@ -165,6 +165,29 @@ class CDCommandLayerMaterial(QUndoCommand):
         self.project.setActiveLayer(self.position)
 
 
+class CDCommandLayerBackgroundMaterial(QUndoCommand):
+    def __init__(self, project, position, material):
+        super().__init__(f"Change material to {material.name}")
+
+        self.project = project
+        self.position = position
+        self.material = material
+
+        self.old_material = self.project.chip_layers[self.position].background_material
+
+    def redo(self) -> None:
+        self.project.layer_model.beginResetModel()
+        self.project.chip_layers[self.position].background_material = self.material
+        self.project.layer_model.endResetModel()
+        self.project.setActiveLayer(self.position)
+
+    def undo(self) -> None:
+        self.project.layer_model.beginResetModel()
+        self.project.chip_layers[self.position].background_material = self.old_material
+        self.project.layer_model.endResetModel()
+        self.project.setActiveLayer(self.position)
+
+
 class CDCommandLayerName(QUndoCommand):
     def __init__(self, project, position, name):
         super().__init__(f"Change layer name to {name}")

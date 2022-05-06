@@ -18,6 +18,7 @@ class CDLayer(QGraphicsItem):
         self._name = name
         self._substrate = None
         self._material = project.theme.material(0)
+        self._background_material = project.theme.material(0)
         self._thickness = DEFAULT_THICKNESS
 
     @property
@@ -55,6 +56,14 @@ class CDLayer(QGraphicsItem):
         for item in self.childItems():
             if item != self._substrate:
                 item.setBrush(self._material.getBrush())
+
+    @property
+    def background_material(self):
+        return self._background_material
+
+    @background_material.setter
+    def background_material(self, b):
+        self._background_material = b
 
     @property
     def thickness(self):
@@ -98,6 +107,7 @@ class CDLayer(QGraphicsItem):
             'visible': self.isVisible(),
             'thickness': self.thickness,
             'material': self.material.name,
+            'background_material': self.background_material.name,
             'items': [item.getData() for item in self.childItems() if item != self._substrate]
         }
 
@@ -107,6 +117,7 @@ class CDLayer(QGraphicsItem):
         self.setVisible(data['visible'])
         self.thickness = data['thickness']
         self.material = self._project.theme.material(data['material'])[1]
+        self.background_material = self._project.theme.material(data['background_material'])[1]
 
         for item in data['items']:
             itm = BLOCKITEMS[item['type']]()
