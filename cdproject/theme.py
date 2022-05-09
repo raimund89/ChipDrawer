@@ -29,6 +29,7 @@ class CDThemeList:
             os.mkdir(self.directory)
 
         try:
+            # TODO: We're assuming here a theme should always be overwritten. Is that true?
             g = Github(base_url="https://api.github.com")
             repo = g.get_repo("raimund89/ChipDrawer")
             themelist = repo.get_contents("configuration/themes")

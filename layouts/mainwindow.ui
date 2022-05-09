@@ -270,7 +270,11 @@
              </widget>
             </item>
             <item row="5" column="1">
-             <widget class="QDoubleSpinBox" name="layer_prop_thickness"/>
+             <widget class="QDoubleSpinBox" name="layer_prop_thickness">
+              <property name="singleStep">
+               <double>0.100000000000000</double>
+              </property>
+             </widget>
             </item>
             <item row="2" column="0">
              <widget class="QLabel" name="label_12">
@@ -368,8 +372,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>360</width>
-              <height>834</height>
+              <width>98</width>
+              <height>89</height>
              </rect>
             </property>
             <attribute name="label">
@@ -389,8 +393,8 @@
                  <rect>
                   <x>0</x>
                   <y>0</y>
-                  <width>340</width>
-                  <height>814</height>
+                  <width>98</width>
+                  <height>28</height>
                  </rect>
                 </property>
                 <property name="styleSheet">
@@ -453,8 +457,15 @@
     <addaction name="action_Delete"/>
     <addaction name="action_Select_All"/>
    </widget>
+   <widget class="QMenu" name="menu_Help">
+    <property name="title">
+     <string>&amp;Help</string>
+    </property>
+    <addaction name="action_About"/>
+   </widget>
    <addaction name="menu_File"/>
    <addaction name="menu_Edit"/>
+   <addaction name="menu_Help"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <widget class="QToolBar" name="toolBar">
@@ -620,6 +631,11 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+A</string>
+   </property>
+  </action>
+  <action name="action_About">
+   <property name="text">
+    <string>&amp;About</string>
    </property>
   </action>
  </widget>
