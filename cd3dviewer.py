@@ -47,11 +47,14 @@ class CD3DViewer(QDialog):
             bg_props = layer.background_material.get3D()
 
             if layer.substrate:
-                c = pv.Cube((0, 0, z_cur + layer.thickness), self.project.chip_width, self.project.chip_height,
-                            layer.thickness * 2)
-                self.plotter.add_mesh(c, **theme.substrate3d)
+                c = pv.Cube((0, 0, z_cur + theme.substrate3d['thickness'] / 2),
+                            self.project.chip_width,
+                            self.project.chip_height,
+                            theme.substrate3d['thickness'])
+                self.plotter.add_mesh(c,
+                                      **{k: theme.substrate3d[k] for k in theme.substrate3d.keys() if k != "thickness"})
 
-                z_cur += 2 * layer.thickness
+                z_cur += theme.substrate3d['thickness']
 
             c = pv.Cube((0, 0, z_cur + layer.thickness / 2), self.project.chip_width, self.project.chip_height,
                         layer.thickness)
