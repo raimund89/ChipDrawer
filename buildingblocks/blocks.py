@@ -265,7 +265,7 @@ class CDBlockTaper(CDBlockItem):
     def __init__(self, w1=None, w2=None, l=None):
         super().__init__()
 
-        self._width1 = DEFAULT_WIDTH if not w1 else w1
+        self._width = DEFAULT_WIDTH if not w1 else w1
         self._width2 = 2 * DEFAULT_WIDTH if not w2 else w2
         self._length = self.DEFAULT_LENGTH if not l else l
 
@@ -274,12 +274,12 @@ class CDBlockTaper(CDBlockItem):
         self.createPath()
 
     @property
-    def width1(self):
-        return self._width1
+    def width(self):
+        return self._width
 
-    @width1.setter
-    def width1(self, w1):
-        self._width1 = w1
+    @width.setter
+    def width(self, w1):
+        self._width = w1
         self.createPath()
 
     @property
@@ -308,16 +308,16 @@ class CDBlockTaper(CDBlockItem):
         self.snaps = [QPointF(-self._length / 2, 0), QPointF(self._length / 2, 0)]
 
         p = QPainterPath()
-        p.moveTo(-self._length / 2, -self._width1 / 2)
+        p.moveTo(-self._length / 2, -self._width / 2)
         p.lineTo(self._length / 2, -self._width2 / 2)
         p.lineTo(self._length / 2, self._width2 / 2)
-        p.lineTo(-self._length / 2, self._width1 / 2)
-        p.lineTo(-self._length / 2, -self._width1 / 2)
+        p.lineTo(-self._length / 2, self._width / 2)
+        p.lineTo(-self._length / 2, -self._width / 2)
 
         self.setPath(p)
 
     def copy(self):
-        b = CDBlockTaper(self._width1, self._width2, self._length)
+        b = CDBlockTaper(self._width, self._width2, self._length)
         b.setBrush(self.brush())
         b.setPos(self.pos())
         b.setScale(self.scale())
@@ -330,7 +330,7 @@ class CDBlockTaper(CDBlockItem):
         return {
             'name': 'Taper',
             'type': 'taper',
-            'width1': self._width1,
+            'width': self._width,
             'width2': self._width2,
             'length': self._length,
             'position': {
@@ -343,7 +343,7 @@ class CDBlockTaper(CDBlockItem):
 
     def loadData(self, data):
         # TODO: Implement name
-        self.width1 = data['width1']
+        self.width = data['width']
         self.width2 = data['width2']
         self.length = data['length']
         self.setPos(QPointF(data['position']['x'], data['position']['y']))

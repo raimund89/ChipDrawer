@@ -430,14 +430,7 @@
               </property>
              </widget>
             </item>
-            <item row="0" column="0">
-             <widget class="QLabel" name="label_13">
-              <property name="text">
-               <string>Width</string>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="1">
+            <item row="4" column="1">
              <spacer name="verticalSpacer">
               <property name="orientation">
                <enum>Qt::Vertical</enum>
@@ -449,6 +442,55 @@
                </size>
               </property>
              </spacer>
+            </item>
+            <item row="2" column="0">
+             <widget class="QLabel" name="label_prop_length">
+              <property name="text">
+               <string>Length</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="1">
+             <widget class="QDoubleSpinBox" name="item_prop_endwidth">
+              <property name="singleStep">
+               <double>0.100000000000000</double>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="1">
+             <widget class="QDoubleSpinBox" name="item_prop_length">
+              <property name="singleStep">
+               <double>0.100000000000000</double>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="0">
+             <widget class="QLabel" name="label_13">
+              <property name="text">
+               <string>Width</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0">
+             <widget class="QLabel" name="label_prop_endwidth">
+              <property name="text">
+               <string>End width</string>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="0">
+             <widget class="QLabel" name="label_prop_radius">
+              <property name="text">
+               <string>Radius</string>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="1">
+             <widget class="QDoubleSpinBox" name="item_prop_radius">
+              <property name="singleStep">
+               <double>0.100000000000000</double>
+              </property>
+             </widget>
             </item>
            </layout>
           </widget>
@@ -710,6 +752,9 @@
     <slot>signal_layer_down()</slot>
     <slot>signal_layer_changed_background_material(int)</slot>
     <slot>signal_item_changed_width()</slot>
+    <slot>signal_item_changed_radius()</slot>
+    <slot>signal_item_changed_length()</slot>
+    <slot>signal_item_changed_endwidth()</slot>
    </slots>
   </customwidget>
  </customwidgets>
@@ -1140,6 +1185,54 @@
     <hint type="sourcelabel">
      <x>1537</x>
      <y>570</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>835</x>
+     <y>530</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>item_prop_length</sender>
+   <signal>editingFinished()</signal>
+   <receiver>drawing_area</receiver>
+   <slot>signal_item_changed_length()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1537</x>
+     <y>624</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>835</x>
+     <y>530</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>item_prop_radius</sender>
+   <signal>editingFinished()</signal>
+   <receiver>drawing_area</receiver>
+   <slot>signal_item_changed_radius()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1537</x>
+     <y>651</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>835</x>
+     <y>530</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>item_prop_endwidth</sender>
+   <signal>editingFinished()</signal>
+   <receiver>drawing_area</receiver>
+   <slot>signal_item_changed_endwidth()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1537</x>
+     <y>597</y>
     </hint>
     <hint type="destinationlabel">
      <x>835</x>

@@ -9,7 +9,9 @@ from PyQt6.QtWidgets import QApplication, QFileDialog, QGraphicsRectItem, QGraph
 from yaml import CLoader
 
 from cdproject.commands import CDCommandAddLayer, CDCommandChangeChipHeight, CDCommandChangeChipMargins, \
-    CDCommandChangeChipWidth, CDCommandItemAdd, CDCommandItemChangeWidth, CDCommandItemsMove, \
+    CDCommandChangeChipWidth, CDCommandItemAdd, CDCommandItemChangeEndWidth, CDCommandItemChangeLength, \
+    CDCommandItemChangeRadius, \
+    CDCommandItemChangeWidth, CDCommandItemsMove, \
     CDCommandLayerBackgroundMaterial, \
     CDCommandLayerDown, CDCommandLayerMaterial, \
     CDCommandLayerName, \
@@ -71,6 +73,8 @@ class CDProject(QGraphicsView):
         layer.substrate = False
         layer.substrate = True
 
+        self.setItemPropsView()
+
     def setActiveLayer(self, row=0):
         self.parent().parent().layer_list.clicked.emit(self.layer_model.index(row, 2))
         self.parent().parent().layer_list.setCurrentIndex(self.layer_model.index(row, 2))
@@ -97,6 +101,7 @@ class CDProject(QGraphicsView):
     def signal_toolbox_clicked(self):
         block = self.sender().block
         if block:
+            self.scene().clearSelection()
             self.floating_item = block()
             self.floating_item.setZValue(1000)
             self.floating_item.setVisible(False)
@@ -297,6 +302,7 @@ class CDProject(QGraphicsView):
             if self.floating_item:
                 # Strangest thing: when Alt is pressed, the mouse wheel 'direction' changes to horizontal
                 self.floating_item.rescale(1.1 if event.angleDelta().x() > 0 else 0.9)
+                self.setItemPropsView()
 
     def enterEvent(self, event: QEnterEvent) -> None:
         if self.floating_item:
@@ -605,15 +611,37 @@ class CDProject(QGraphicsView):
             self.recalcSnaps()
 
     def setItemPropsView(self):
+        v = None
+        self.parent().parent().item_props.setEnabled(False)
+        self.parent().parent().label_prop_radius.setVisible(False)
+        self.parent().parent().item_prop_radius.setVisible(False)
+        self.parent().parent().label_prop_length.setVisible(False)
+        self.parent().parent().item_prop_length.setVisible(False)
+        self.parent().parent().label_prop_endwidth.setVisible(False)
+        self.parent().parent().item_prop_endwidth.setVisible(False)
+
         if self.floating_item:
-            self.parent().parent().item_props.setEnabled(True)
-            self.parent().parent().item_prop_width.setValue(self.floating_item.width)
+            v = self.floating_item
         elif self.scene().selectedItems():
-            self.parent().parent().item_props.setEnabled(True)
-            self.parent().parent().item_prop_width.setValue(self.scene().selectedItems()[0].width)
+            v = self.scene().selectedItems()[0]
         else:
-            self.parent().parent().item_props.setEnabled(False)
-            self.parent().parent().item_prop_width.setValue(0.0)
+            return
+
+        self.parent().parent().item_props.setEnabled(True)
+        self.parent().parent().item_prop_width.setValue(v.width)
+
+        if hasattr(v, 'radius'):
+            self.parent().parent().label_prop_radius.setVisible(True)
+            self.parent().parent().item_prop_radius.setVisible(True)
+            self.parent().parent().item_prop_radius.setValue(v.radius)
+        if hasattr(v, 'length'):
+            self.parent().parent().label_prop_length.setVisible(True)
+            self.parent().parent().item_prop_length.setVisible(True)
+            self.parent().parent().item_prop_length.setValue(v.length)
+        if hasattr(v, 'width2'):
+            self.parent().parent().label_prop_endwidth.setVisible(True)
+            self.parent().parent().item_prop_endwidth.setVisible(True)
+            self.parent().parent().item_prop_endwidth.setValue(v.width2)
 
     @pyqtSlot()
     def signal_item_changed_width(self):
@@ -623,3 +651,33 @@ class CDProject(QGraphicsView):
             self.floating_item.width = v
         elif self.scene().selectedItems():
             self.undostack.push(CDCommandItemChangeWidth(self, self.scene().selectedItems(), v))
+
+    @pyqtSlot()
+    def signal_item_changed_radius(self):
+        v = self.sender().value()
+
+        if self.floating_item:
+            self.floating_item.radius = v
+        elif self.scene().selectedItems():
+            self.undostack.push(
+                CDCommandItemChangeRadius(self, [i for i in self.scene().selectedItems() if hasattr(i, 'radius')], v))
+
+    @pyqtSlot()
+    def signal_item_changed_endwidth(self):
+        v = self.sender().value()
+
+        if self.floating_item:
+            self.floating_item.width2 = v
+        elif self.scene().selectedItems():
+            self.undostack.push(
+                CDCommandItemChangeEndWidth(self, [i for i in self.scene().selectedItems() if hasattr(i, 'width2')], v))
+
+    @pyqtSlot()
+    def signal_item_changed_length(self):
+        v = self.sender().value()
+
+        if self.floating_item:
+            self.floating_item.length = v
+        elif self.scene().selectedItems():
+            self.undostack.push(
+                CDCommandItemChangeLength(self, [i for i in self.scene().selectedItems() if hasattr(i, 'length')], v))

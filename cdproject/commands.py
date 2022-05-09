@@ -394,3 +394,68 @@ class CDCommandItemChangeWidth(QUndoCommand):
     def undo(self) -> None:
         for i, item in enumerate(self.items):
             item.width = self.old_widths[i]
+
+        self.project.setItemPropsView()
+
+
+class CDCommandItemChangeEndWidth(QUndoCommand):
+    def __init__(self, project, items, width):
+        super().__init__(f"Change item end width")
+
+        self.project = project
+        self.items = items
+        self.endwidth = width
+
+        self.old_endwidths = [i.width2 for i in items]
+
+    def redo(self) -> None:
+        for item in self.items:
+            item.width2 = self.endwidth
+
+    def undo(self) -> None:
+        for i, item in enumerate(self.items):
+            item.width2 = self.old_endwidths[i]
+
+        self.project.setItemPropsView()
+
+
+class CDCommandItemChangeLength(QUndoCommand):
+    def __init__(self, project, items, length):
+        super().__init__(f"Change item length")
+
+        self.project = project
+        self.items = items
+        self.length = length
+
+        self.old_lengths = [i.length for i in items]
+
+    def redo(self) -> None:
+        for item in self.items:
+            item.length = self.length
+
+    def undo(self) -> None:
+        for i, item in enumerate(self.items):
+            item.length = self.old_lengths[i]
+
+        self.project.setItemPropsView()
+
+
+class CDCommandItemChangeRadius(QUndoCommand):
+    def __init__(self, project, items, radius):
+        super().__init__(f"Change item radius")
+
+        self.project = project
+        self.items = items
+        self.radius = radius
+
+        self.old_radii = [i.radius for i in items]
+
+    def redo(self) -> None:
+        for item in self.items:
+            item.radius = self.radius
+
+    def undo(self) -> None:
+        for i, item in enumerate(self.items):
+            item.radius = self.old_radii[i]
+
+        self.project.setItemPropsView()
