@@ -58,7 +58,8 @@ class CDProject(QGraphicsView):
         layer = CDLayer(self, "Layer 1")
         layer.setVisible(True)
         layer.substrate = True
-        layer.material = self.theme.material(0)
+        layer.material = self.theme.material(self.theme.default_material)
+        layer.background_material = self.theme.material(self.theme.default_background)
         layer.setZValue(0)
         self.chip_layers.insert(0, layer)
         self.scene().addItem(layer)
@@ -120,7 +121,9 @@ class CDProject(QGraphicsView):
                                                   name=dialog.layer_name.text(),
                                                   visible=dialog.check_visible.isChecked(),
                                                   substrate=dialog.check_substrate.isChecked(),
-                                                  material=self.theme.material(dialog.material.currentIndex())
+                                                  material=self.theme.material(dialog.material.currentIndex()),
+                                                  background_material=self.theme.material(
+                                                      dialog.background_material.currentIndex())
                                                   )
                                 )
 

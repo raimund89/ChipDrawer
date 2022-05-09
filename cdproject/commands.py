@@ -5,7 +5,7 @@ from cdproject.layer import CDLayer
 
 
 class CDCommandAddLayer(QUndoCommand):
-    def __init__(self, project, position, name, visible, substrate, material):
+    def __init__(self, project, position, name, visible, substrate, material, background_material):
         super().__init__(f"Add layer {name}")
 
         self.project = project
@@ -15,6 +15,7 @@ class CDCommandAddLayer(QUndoCommand):
         self.visible = visible
         self.substrate = substrate
         self.material = material
+        self.background = background_material
 
     def redo(self) -> None:
         self.project.layer_model.beginResetModel()
@@ -23,6 +24,7 @@ class CDCommandAddLayer(QUndoCommand):
         layer.setVisible(self.visible)
         layer.substrate = self.substrate
         layer.material = self.material
+        layer.background_material = self.background
 
         self.project.chip_layers.insert(self.position, layer)
         self.project.scene().addItem(self.project.chip_layers[self.position])

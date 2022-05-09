@@ -38,7 +38,9 @@ class LayerModel(QAbstractTableModel):
                     return Qt.CheckState.Checked if self._project.chip_layers[
                         row].isVisible() else Qt.CheckState.Unchecked
             case Qt.ItemDataRole.BackgroundRole:
-                return QBrush(self._project.chip_layers[row].material.displayColor) if column == 1 else None
+                print(self._project.chip_layers[row].background_material.displayColor)
+                return (QBrush(self._project.chip_layers[row].material.displayColor), QBrush(
+                    self._project.chip_layers[row].background_material.displayColor)) if column == 1 else None
 
     def flags(self, index: QModelIndex) -> Qt.ItemFlag:
         return Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEnabled
