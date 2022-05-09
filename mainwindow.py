@@ -10,6 +10,9 @@ from buildingblocks import CDBuildingBlockList
 from cd3dviewer import CD3DViewer
 
 
+# TODO: Implement recents
+
+
 class MainWindow(QMainWindow):
     def __init__(self, settings):
         super().__init__()

@@ -23,7 +23,9 @@ class CD3DViewer(QDialog):
         # add the pyvista interactor object
         self.plotter = QtInteractor(self.frame)
         self.plotter.enable_anti_aliasing()
+        self.plotter.enable_eye_dome_lighting()
         # TODO: Enable shadows
+        # TODO: Enable eye dome rendering
         # self.plotter.enable_eye_dome_lighting()
         vlayout.addWidget(self.plotter.interactor)
 
