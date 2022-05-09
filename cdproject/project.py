@@ -2,12 +2,13 @@ import math
 import os
 
 import yaml
-from PyQt6.QtCore import QEvent, QModelIndex, Qt, pyqtSlot
+from PyQt6.QtCore import QEvent, QModelIndex, QPoint, QPointF, Qt, pyqtSlot
 from PyQt6.QtGui import QBrush, QEnterEvent, QIcon, QKeyEvent, QMouseEvent, QPainter, QPen, QPixmap
 from PyQt6.QtWidgets import QApplication, QFileDialog, QGraphicsRectItem, QGraphicsScene, QGraphicsView, \
     QMessageBox
 from yaml import CLoader
 
+from buildingblocks.blockitem import SNAP_MAX
 from cdproject.commands import CDCommandAddLayer, CDCommandChangeChipHeight, CDCommandChangeChipMargins, \
     CDCommandChangeChipWidth, CDCommandItemAdd, CDCommandItemChangeEndWidth, CDCommandItemChangeLength, \
     CDCommandItemChangeRadius, \
@@ -240,7 +241,8 @@ class CDProject(QGraphicsView):
         self.recalcSnaps()
 
     def recalcSnaps(self):
-        temp_list = []
+        temp_list = [QPointF(0, SNAP_MAX), QPointF(SNAP_MAX, 0), QPointF(self.chip_width, SNAP_MAX),
+                     QPointF(SNAP_MAX, self.chip_height)]
         for layer in self.chip_layers:
             temp_list += layer.getSnaps()
 
@@ -389,12 +391,20 @@ class CDProject(QGraphicsView):
         super().mouseReleaseEvent(event)
 
     def getSnapCoordinates(self, points):
+        # TODO: Return more than one snapping point, so we can snap to an X,Y point, or a combination of an X and a Y point
         for i, point in enumerate(points):
             real = self.mapFromScene(point)
             for snap in self.snaplist:
-                d = math.sqrt((snap.x() - real.x()) ** 2 + (snap.y() - real.y()) ** 2)
-                if d < 20:
-                    return i, self.mapToScene(snap)
+                if snap.x() > SNAP_MAX - 1000:
+                    if abs(snap.y() - real.y()) < 10:
+                        return i, self.mapToScene(QPoint(real.x(), snap.y()))
+                elif snap.y() > SNAP_MAX - 1000:
+                    if abs(snap.x() - real.x()) < 10:
+                        return i, self.mapToScene(QPoint(snap.x(), real.y()))
+                else:
+                    d = math.sqrt((snap.x() - real.x()) ** 2 + (snap.y() - real.y()) ** 2)
+                    if d < 20:
+                        return i, self.mapToScene(snap)
 
         return None
 

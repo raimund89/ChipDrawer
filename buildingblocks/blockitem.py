@@ -1,9 +1,11 @@
 import math
 import typing
 
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import QPointF, Qt
 from PyQt6.QtGui import QBrush, QPainter, QPainterPath, QPen, QTransform
 from PyQt6.QtWidgets import QGraphicsPathItem, QStyleOptionGraphicsItem, QWidget
+
+SNAP_MAX = 1e6
 
 DEFAULT_WIDTH = 0.2
 SQRT_2 = math.sqrt(2)
@@ -32,7 +34,14 @@ class CDBlockItem(QGraphicsPathItem):
 
     def snapTo(self, index, point):
         transform = QTransform().scale(self.scale(), self.scale()).rotate(self.rotation())
-        p = transform.map(self._snaps[index])
+        if self._snaps[index].x() == SNAP_MAX:
+            p = transform.map(QPointF(self.pos().x(), self._snaps[index].y()))
+        elif self._snaps[index].y() == SNAP_MAX:
+            p = transform.map(QPointF(self._snaps[index].x(), self.pos().y()))
+        else:
+            p = transform.map(self._snaps[index])
+
+        print(point - p)
         self.setPos(point - p)
 
     def shape(self) -> QPainterPath:

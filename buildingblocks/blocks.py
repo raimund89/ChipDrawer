@@ -4,7 +4,7 @@ from PyQt6.QtCore import QPoint, QPointF, QRectF, Qt
 from PyQt6.QtGui import QBrush, QPainter, QPainterPath, QPen
 from PyQt6.QtWidgets import QApplication, QStyleOptionGraphicsItem, QWidget
 
-from buildingblocks.blockitem import CDBlockItem, DEFAULT_WIDTH, SQRT_2
+from buildingblocks.blockitem import CDBlockItem, DEFAULT_WIDTH, SNAP_MAX, SQRT_2
 
 
 # TODO: Make pen size and handle size dependent on pixels, not on the scene coordinates
@@ -51,7 +51,8 @@ class CDBlockStraight(CDBlockItem):
         self.createPath()
 
     def createPath(self):
-        self.snaps = [QPointF(-self._length / 2, 0), QPointF(self._length / 2, 0)]
+        self.snaps = [QPointF(-self._length / 2, 0), QPointF(self._length / 2, 0), QPointF(-self._length / 2, SNAP_MAX),
+                      QPointF(self._length / 2, SNAP_MAX), QPointF(SNAP_MAX, 0)]
 
         p = QPainterPath()
         p.addRect(-self._length / 2, -self._width / 2, self._length, self._width)
@@ -222,7 +223,12 @@ class CDBlockBend(CDBlockItem):
                 2 * (self._radius + self._width / 2), 2 * (self._radius + self._width / 2), -90, 90)
         p.lineTo(center.x() + (self._radius - self._width / 2), center.y())
 
-        self.snaps = [QPointF(center.x() + self._radius, center.y()), QPointF(center.x(), center.y() + self._radius)]
+        self.snaps = [QPointF(center.x() + self._radius, center.y()),
+                      QPointF(center.x(), center.y() + self._radius),
+                      QPointF(center.x() + self._radius, SNAP_MAX),
+                      QPointF(SNAP_MAX, center.y()),
+                      QPointF(center.x(), SNAP_MAX),
+                      QPointF(SNAP_MAX, center.y() + self._radius)]
 
         self.setPath(p)
 
@@ -305,7 +311,11 @@ class CDBlockTaper(CDBlockItem):
         self.createPath()
 
     def createPath(self):
-        self.snaps = [QPointF(-self._length / 2, 0), QPointF(self._length / 2, 0)]
+        self.snaps = [QPointF(-self._length / 2, 0),
+                      QPointF(self._length / 2, 0),
+                      QPointF(self._length / 2, SNAP_MAX),
+                      QPointF(-self._length / 2, SNAP_MAX),
+                      QPointF(SNAP_MAX, 0)]
 
         p = QPainterPath()
         p.moveTo(-self._length / 2, -self._width / 2)
