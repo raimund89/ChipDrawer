@@ -1,4 +1,6 @@
 name: "Default"
+default material: "Nitride"
+default background: "Glass"
 substrate:
   color: '#363d47'
   opacity: 1.0
@@ -6,48 +8,54 @@ substrate:
   specular_power: 60
   diffuse: 1.0
 materials:
-- name: "Nitride"
-  description: "Si3N4 waveguide material"
-  color: "#5e0069"
-  3d:
+  - name: "Nitride"
+    description: "Si3N4 waveguide material"
     color: "#5e0069"
-    opacity: 1.0
-    specular: 0.5
-    specular_power: 60.0
-    diffuse: 1.0
-- name: "Oxide"
-  description: "SiO2 cladding material"
-  color: "#7aebff"
-  3d:
+    3d:
+      color: "#5e0069"
+      opacity: 1.0
+      specular: 0.5
+      specular_power: 60.0
+      diffuse: 1.0
+  - name: "Oxide"
+    description: "SiO2 cladding material"
     color: "#7aebff"
-    opacity: 0.4
-    specular: 1.0
-    specular_power: 60.0
-    diffuse: 1.0
-- name: "Glass"
-  description: "Glass top cover"
-  color: "#c4f6ff"
-  3d:
+    3d:
+      color: "#7aebff"
+      opacity: 0.4
+      specular: 1.0
+      specular_power: 60.0
+      diffuse: 1.0
+  - name: "Glass"
+    description: "Glass top cover"
     color: "#c4f6ff"
-    opacity: 0.3
-    specular: 1.0
-    specular_power: 60.0
-    diffuse: 1.0
-- name: "Gold"
-  description: "Trace material"
-  color: "#ffcc00"
-  3d:
+    3d:
+      color: "#c4f6ff"
+      opacity: 0.2
+      show_edges: True
+      specular: 1.0
+      specular_power: 60.0
+      diffuse: 1.0
+  - name: "Gold"
+    description: "Trace material"
     color: "#ffcc00"
-    opacity: 1.0
-    specular: 1.0
-    specular_power: 100.0
-    diffuse: 1.0
-- name: "Silver"
-  description: "Mirror material"
-  color: "#9e9e9e"
-  3d:
+    3d:
+      color: "#ffcc00"
+      opacity: 1.0
+      pbr: True
+      metallic: 1.0
+  - name: "Silver"
+    description: "Mirror material"
     color: "#9e9e9e"
-    opacity: 1.0
-    specular: 1.0
-    specular_power: 100.0
-    diffuse: 1.0
+    3d:
+      color: "#9e9e9e"
+      opacity: 1.0
+      specular: 1.0
+      specular_power: 100.0
+      diffuse: 1.0
+  - name: "Empty"
+    descrption: "No material"
+    color: "#ffffff"
+    3d:
+      color: "#ffffff"
+      opacity: 0.0

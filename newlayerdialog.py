@@ -1,7 +1,9 @@
 from PyQt6 import uic
-from PyQt6.QtGui import QPixmap, QIcon, QHideEvent
+from PyQt6.QtGui import QIcon, QPixmap
 from PyQt6.QtWidgets import QDialog
 
+
+# TODO: Merge this dialog with the widget shown in the lower-left corner of the screen. Basically, make it a widget.
 
 def icon_from_color(c):
     pm = QPixmap(100, 100)
@@ -22,6 +24,10 @@ class NewLayerDialog(QDialog):
 
         for material in parent.theme.materials():
             self.material.addItem(icon_from_color(material.displayColor), material.name)
+            self.background_material.addItem(icon_from_color(material.displayColor), material.name)
+
+        self.material.setCurrentIndex(parent.theme.default_material)
+        self.background_material.setCurrentIndex(parent.theme.default_background)
 
         self.show()
 

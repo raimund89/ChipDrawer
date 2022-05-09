@@ -73,6 +73,9 @@ class CDTheme:
             self.material_list.append(
                 CDMaterial(material['name'], QColor(material['color']), material['description'], material['3d']))
 
+        self.default_material = self.material(data['default material'])[0]
+        self.default_background = self.material(data['default background'])[0]
+
     @property
     def name(self):
         return self._name
