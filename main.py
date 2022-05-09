@@ -1,10 +1,15 @@
 import ctypes
+import os
 import pathlib
+import time
 
-from PyQt6.QtCore import QSettings
-from PyQt6.QtWidgets import QApplication
+from PyQt6.QtCore import QSettings, Qt
+from PyQt6.QtGui import QPixmap
+from PyQt6.QtWidgets import QApplication, QSplashScreen
 from qt_material import apply_stylesheet
 
+from buildingblocks import CDBuildingBlockList
+from cdproject.theme import CDThemeList
 from mainwindow import MainWindow
 
 # TODO: Programmatically load blocks from file
@@ -39,6 +44,13 @@ extra = {
 
 if __name__ == "__main__":
     app = QApplication([])
+    ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("chipdrawer.chipdrawer.v0.1")
+
+    splash = QSplashScreen(QPixmap("graphics/splash.png"))
+    splash.show()
+
+    splash.showMessage("Loading settings...", Qt.AlignmentFlag.AlignBottom | Qt.AlignmentFlag.AlignCenter,
+                       Qt.GlobalColor.white)
 
     settings = QSettings(QSettings.Format.IniFormat, QSettings.Scope.UserScope, "Chip Drawer", "Chip Drawer")
 
@@ -58,7 +70,16 @@ if __name__ == "__main__":
 
     settings.sync()
 
-    ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("chipdrawer.chipdrawer.v0.1")
+    splash.showMessage("Loading themes and blocks...", Qt.AlignmentFlag.AlignBottom | Qt.AlignmentFlag.AlignCenter,
+                       Qt.GlobalColor.white)
+
+    tl = CDThemeList(os.path.dirname(settings.fileName()))
+    tl.installThemes()
+    bl = CDBuildingBlockList(None, os.path.dirname(settings.fileName()))
+    bl.installBlocks()
+
+    splash.showMessage("Setting window styles...", Qt.AlignmentFlag.AlignBottom | Qt.AlignmentFlag.AlignCenter,
+                       Qt.GlobalColor.white)
 
     match settings.value("style"):
         case "dark":
@@ -67,6 +88,11 @@ if __name__ == "__main__":
             apply_stylesheet(app, theme='light_cyan.xml', extra=extra)
         case _:
             apply_stylesheet(app, theme='dark_amber.xml', extra=extra)
+
+    splash.showMessage("Starting main window...", Qt.AlignmentFlag.AlignBottom | Qt.AlignmentFlag.AlignCenter,
+                       Qt.GlobalColor.white)
+
+    time.sleep(1)
 
     window = MainWindow(settings)
 

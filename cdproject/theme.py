@@ -2,6 +2,7 @@ import glob
 import os
 
 from PyQt6.QtGui import QColor
+from github import Github, RateLimitExceededException
 from yaml import load
 
 try:
@@ -19,15 +20,27 @@ class CDThemeList:
 
         self._themes = []
 
-        if not os.path.isdir(self.directory):
-            self.installThemes()
+        self.installThemes()
 
         self.loadThemes()
 
     def installThemes(self):
-        os.mkdir(self.directory)
-        # TODO: Implement this. Download the themes from github and save in self.directory
-        # If no internet connection, display a big fat error
+        if not os.path.isdir(self.directory):
+            os.mkdir(self.directory)
+
+        try:
+            g = Github(base_url="https://api.github.com")
+            repo = g.get_repo("raimund89/ChipDrawer")
+            themelist = repo.get_contents("configuration/themes")
+            for theme in themelist:
+                d = theme.decoded_content.decode("utf-8")
+                with open(f"{self.directory}/{theme.name}", "w") as f:
+                    f.write(d)
+        except RateLimitExceededException:
+            return
+        except:
+            print("Could not download the themes")
+            # TODO: if no internet connection, display a big fat error
 
     def loadThemes(self):
         for theme in glob.glob(self.directory + "/*.yaml"):

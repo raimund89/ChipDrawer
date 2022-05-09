@@ -2,17 +2,17 @@ import glob
 import os
 
 from PyQt6.QtCore import QByteArray, QSize, Qt
-from PyQt6.QtGui import QImage, QIcon, QPixmap
-from PyQt6.QtWidgets import QPushButton, QSpacerItem, QSizePolicy
+from PyQt6.QtGui import QIcon, QImage, QPixmap
+from PyQt6.QtWidgets import QPushButton, QSizePolicy, QSpacerItem
+from github import Github, RateLimitExceededException
 from yaml import load
 
-from buildingblocks.blocks import CDBlockStraight, CDBlockBend, CDBlockTaper
+from buildingblocks.blocks import CDBlockBend, CDBlockStraight, CDBlockTaper
 
 try:
     from yaml import CLoader as Loader, CDumper as Dumper
 except ImportError:
     from yaml import Loader, Dumper
-
 
 BLOCKITEMS = {
     'mouse': None,
@@ -51,25 +51,41 @@ class CDBuildingBlockList:
     def __init__(self, mainwindow, directory):
         # Loading the list of themes from the disk
         self.directory = directory + "/blocks"
-        self.project = mainwindow.drawing_area
-        self.box_standard = mainwindow.standard_blocks_layout.layout()
-        self.box_custom = mainwindow.custom_blocks_layout.layout()
 
         self._blocks = {
             'standard': [],
             'custom': []
         }
 
-        if not os.path.isdir(self.directory):
-            self.installBlocks()
+        self.installBlocks()
 
-        self.loadBlocks()
+        if mainwindow:
+            self.project = mainwindow.drawing_area
+            self.box_standard = mainwindow.standard_blocks_layout.layout()
+            self.box_custom = mainwindow.custom_blocks_layout.layout()
+
+            self.loadBlocks()
 
     def installBlocks(self):
-        os.mkdir(self.directory)
-        os.mkdir(self.directory + "/standard")
-        os.mkdir(self.directory + "/custom")
-        # TODO: Download standard blocks from github. If it doesn't work, show a big error
+        if not os.path.isdir(self.directory):
+            os.mkdir(self.directory)
+            os.mkdir(self.directory + "/standard")
+            os.mkdir(self.directory + "/custom")
+
+        try:
+            g = Github(base_url="https://api.github.com")
+            repo = g.get_repo("raimund89/ChipDrawer")
+            blocklist = repo.get_contents("configuration/blocks/standard")
+            print(blocklist)
+            for block in blocklist:
+                d = block.decoded_content.decode("utf-8")
+                with open(f"{self.directory}/standard/{block.name}", "w") as f:
+                    f.write(d)
+        except RateLimitExceededException:
+            return
+        except:
+            print("Couldn't download the blocks for some reason")
+            # TODO: if no internet connection, display a big fat error
 
     def loadBlocks(self):
         for block in glob.glob(self.directory + "/standard/*.yaml"):
@@ -96,7 +112,8 @@ class CDBuildingBlockList:
                 j = 0
                 i += 1
 
-        self.box_standard.addItem(QSpacerItem(20, 40, vPolicy=QSizePolicy.Policy.Expanding), i+1, 0, rowSpan=1, columnSpan=3)
+        self.box_standard.addItem(QSpacerItem(20, 40, vPolicy=QSizePolicy.Policy.Expanding), i + 1, 0, rowSpan=1,
+                                  columnSpan=3)
 
         i, j = 0, 0
         for block in self._blocks['custom']:
