@@ -375,3 +375,22 @@ class CDCommandItemsMove(QUndoCommand):
         for item in self.movelist:
             item[0].setPos(item[1])
         self.project.recalcSnaps()
+
+
+class CDCommandItemChangeWidth(QUndoCommand):
+    def __init__(self, project, items, width):
+        super().__init__(f"Change item width")
+
+        self.project = project
+        self.items = items
+        self.width = width
+
+        self.old_widths = [i.width for i in items]
+
+    def redo(self) -> None:
+        for item in self.items:
+            item.width = self.width
+
+    def undo(self) -> None:
+        for i, item in enumerate(self.items):
+            item.width = self.old_widths[i]

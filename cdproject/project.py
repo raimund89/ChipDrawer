@@ -9,7 +9,8 @@ from PyQt6.QtWidgets import QApplication, QFileDialog, QGraphicsRectItem, QGraph
 from yaml import CLoader
 
 from cdproject.commands import CDCommandAddLayer, CDCommandChangeChipHeight, CDCommandChangeChipMargins, \
-    CDCommandChangeChipWidth, CDCommandItemAdd, CDCommandItemsMove, CDCommandLayerBackgroundMaterial, \
+    CDCommandChangeChipWidth, CDCommandItemAdd, CDCommandItemChangeWidth, CDCommandItemsMove, \
+    CDCommandLayerBackgroundMaterial, \
     CDCommandLayerDown, CDCommandLayerMaterial, \
     CDCommandLayerName, \
     CDCommandLayerSubstrate, CDCommandLayerThickness, CDCommandLayerUp, CDCommandLayerVisibility, CDCommandRemoveLayer
@@ -100,10 +101,12 @@ class CDProject(QGraphicsView):
             self.floating_item.setZValue(1000)
             self.floating_item.setVisible(False)
             self.scene().addItem(self.floating_item)
+            self.setItemPropsView()
         else:
             if self.floating_item:
                 self.scene().removeItem(self.floating_item)
                 self.floating_item = None
+                self.setItemPropsView()
 
     ###########################################################################
     #                                                                         #
@@ -356,6 +359,8 @@ class CDProject(QGraphicsView):
                 ))
             elif event.button() == Qt.MouseButton.RightButton:
                 self.floating_item.setRotation((self.floating_item.rotation() + 90) % 360)
+
+            self.setItemPropsView()
         elif self.selected_items and event.button() == Qt.MouseButton.LeftButton:
             print("Some items survived the drag event")
             moved = False
@@ -369,6 +374,8 @@ class CDProject(QGraphicsView):
                     movelist.append((item, self.selected_items_old_positions[i], item.pos()))
 
                 self.undostack.push(CDCommandItemsMove(self, movelist))
+
+            self.setItemPropsView()
         else:
             self.selected_items.clear()
             self.selected_items_old_positions.clear()
@@ -596,3 +603,23 @@ class CDProject(QGraphicsView):
             self.setActiveLayer(0)
 
             self.recalcSnaps()
+
+    def setItemPropsView(self):
+        if self.floating_item:
+            self.parent().parent().item_props.setEnabled(True)
+            self.parent().parent().item_prop_width.setValue(self.floating_item.width)
+        elif self.scene().selectedItems():
+            self.parent().parent().item_props.setEnabled(True)
+            self.parent().parent().item_prop_width.setValue(self.scene().selectedItems()[0].width)
+        else:
+            self.parent().parent().item_props.setEnabled(False)
+            self.parent().parent().item_prop_width.setValue(0.0)
+
+    @pyqtSlot()
+    def signal_item_changed_width(self):
+        v = self.sender().value()
+
+        if self.floating_item:
+            self.floating_item.width = v
+        elif self.scene().selectedItems():
+            self.undostack.push(CDCommandItemChangeWidth(self, self.scene().selectedItems(), v))
