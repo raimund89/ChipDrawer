@@ -90,7 +90,6 @@ class CDLayer(QGraphicsItem):
         for item in self.childItems():
             if item != self._substrate:
                 snaps += item.getSnaps()
-
         return snaps
 
     def itemChange(self, change: 'QGraphicsItem.GraphicsItemChange', value: typing.Any) -> typing.Any:

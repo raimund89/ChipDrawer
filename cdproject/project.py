@@ -2,21 +2,14 @@ import math
 import os
 
 import yaml
-from PyQt6.QtCore import QEvent, QModelIndex, QPoint, QPointF, Qt, pyqtSlot
+from PyQt6.QtCore import QEvent, QModelIndex, QPointF, Qt, pyqtSlot
 from PyQt6.QtGui import QBrush, QEnterEvent, QIcon, QKeyEvent, QMouseEvent, QPainter, QPen, QPixmap
-from PyQt6.QtWidgets import QApplication, QFileDialog, QGraphicsRectItem, QGraphicsScene, QGraphicsView, \
+from PyQt6.QtWidgets import QApplication, QFileDialog, QGraphicsLineItem, QGraphicsRectItem, QGraphicsScene, \
+    QGraphicsView, \
     QMessageBox
 from yaml import CLoader
 
-from buildingblocks.blockitem import SNAP_MAX
-from cdproject.commands import CDCommandAddLayer, CDCommandChangeChipHeight, CDCommandChangeChipMargins, \
-    CDCommandChangeChipWidth, CDCommandItemAdd, CDCommandItemChangeEndWidth, CDCommandItemChangeLength, \
-    CDCommandItemChangeRadius, \
-    CDCommandItemChangeWidth, CDCommandItemsMove, \
-    CDCommandLayerBackgroundMaterial, \
-    CDCommandLayerDown, CDCommandLayerMaterial, \
-    CDCommandLayerName, \
-    CDCommandLayerSubstrate, CDCommandLayerThickness, CDCommandLayerUp, CDCommandLayerVisibility, CDCommandRemoveLayer
+from cdproject.commands import *
 from cdproject.layer import CDLayer
 from cdproject.layer_model import LayerModel
 from cdproject.theme import CDThemeList
@@ -42,6 +35,7 @@ class CDProject(QGraphicsView):
         self.selection_moved = None
         self.selected_items = []
         self.snaplist = []
+        self.snapitems = []
         self.floating_item = None
         self.zoom_total = None
         self.chip_outline = None
@@ -241,14 +235,12 @@ class CDProject(QGraphicsView):
         self.recalcSnaps()
 
     def recalcSnaps(self):
-        temp_list = [QPointF(0, SNAP_MAX), QPointF(SNAP_MAX, 0), QPointF(self.chip_width, SNAP_MAX),
-                     QPointF(SNAP_MAX, self.chip_height)]
-        for layer in self.chip_layers:
-            temp_list += layer.getSnaps()
+        self.snaplist = [self.mapFromScene(0, 0), self.mapFromScene(self.chip_width, self.chip_height),
+                         self.mapFromScene(0, self.chip_height), self.mapFromScene(self.chip_width, 0)]
 
-        self.snaplist.clear()
-        for snap in temp_list:
-            self.snaplist.append(self.mapFromScene(snap))
+        for layer in self.chip_layers:
+            snaps = layer.getSnaps()
+            self.snaplist += [self.mapFromScene(snap) for snap in snaps]
 
     def resizeEvent(self, event) -> None:
         self.fitInView(self.sceneRect(), Qt.AspectRatioMode.KeepAspectRatio)
@@ -326,7 +318,7 @@ class CDProject(QGraphicsView):
 
             coords = self.getSnapCoordinates(flsnaps)
             if coords:
-                self.floating_item.snapTo(*coords)
+                self.floating_item.snapTo(*coords[:3])
             return
         elif not self.scene().selectedItems() and event.buttons() == Qt.MouseButton.LeftButton and self.selected_items:
             self.selected_items.clear()
@@ -390,21 +382,104 @@ class CDProject(QGraphicsView):
 
         super().mouseReleaseEvent(event)
 
+    def sort_snaps(self, e):
+        return e[3]
+
     def getSnapCoordinates(self, points):
-        # TODO: Return more than one snapping point, so we can snap to an X,Y point, or a combination of an X and a Y point
+        # TODO: Became rather large. Can we improve?
+        # TODO: Snapping line end-points are given by the mouse position, not by the final snapping position. Fix that.
+        DIST = 20
+        snaps = []
+
+        for item in self.snapitems:
+            self.scene().removeItem(item)
+
+        self.snapitems.clear()
+
         for i, point in enumerate(points):
-            real = self.mapFromScene(point)
+            px = self.mapFromScene(point)
+
             for snap in self.snaplist:
-                if snap.x() > SNAP_MAX - 1000:
-                    if abs(snap.y() - real.y()) < 10:
-                        return i, self.mapToScene(QPoint(real.x(), snap.y()))
-                elif snap.y() > SNAP_MAX - 1000:
-                    if abs(snap.x() - real.x()) < 10:
-                        return i, self.mapToScene(QPoint(snap.x(), real.y()))
-                else:
-                    d = math.sqrt((snap.x() - real.x()) ** 2 + (snap.y() - real.y()) ** 2)
-                    if d < 20:
-                        return i, self.mapToScene(snap)
+                if abs(px.x() - snap.x()) < DIST and abs(px.y() - snap.y()) < DIST:
+                    snaps += [(i,
+                               'xy',
+                               self.mapToScene(snap),
+                               math.sqrt((snap.x() - px.x()) ** 2 + (snap.y() - px.y()) ** 2),
+                               self.mapToScene(snap))]
+                if abs(px.x() - snap.x()) < DIST:
+                    snaps += [(i,
+                               'x',
+                               self.mapToScene(snap.x(), px.y()),
+                               math.sqrt((snap.x() - px.x()) ** 2 + (snap.y() - px.y()) ** 2),
+                               self.mapToScene(snap))]
+                if abs(px.y() - snap.y()) < DIST:
+                    snaps += [(i,
+                               'y',
+                               self.mapToScene(px.x(), snap.y()),
+                               math.sqrt((snap.x() - px.x()) ** 2 + (snap.y() - px.y()) ** 2),
+                               self.mapToScene(snap))]
+
+        if snaps:
+            snaps.sort(key=self.sort_snaps)
+
+            has_x = False
+            has_y = False
+            has_xy = False
+
+            pen = QPen(Qt.GlobalColor.black, 0.02, Qt.PenStyle.DotLine)
+            for snap in snaps:
+                if snap[1] == 'x' and not has_x:
+                    has_x = True
+                    item = QGraphicsLineItem(snap[2].x(), snap[2].y(), snap[2].x(),
+                                             snap[4].y())
+                    item.setPen(pen)
+                    self.snapitems.append(item)
+                    self.scene().addItem(item)
+                elif snap[1] == 'y' and not has_y:
+                    has_y = True
+                    item = QGraphicsLineItem(snap[2].x(), snap[2].y(), snap[4].x(),
+                                             snap[2].y())
+                    item.setPen(pen)
+                    self.snapitems.append(item)
+                    self.scene().addItem(item)
+                elif snap[1] == 'xy' and not has_xy:
+                    has_xy = True
+                    item = QGraphicsLineItem(snap[2].x() - 0.2, snap[2].y(), snap[2].x() + 0.2, snap[2].y())
+                    item.setPen(pen)
+                    self.snapitems.append(item)
+                    self.scene().addItem(item)
+                    item2 = QGraphicsLineItem(snap[2].x(), snap[2].y() - 0.2, snap[2].x(), snap[2].y() + 0.2)
+                    item2.setPen(pen)
+                    self.snapitems.append(item2)
+                    self.scene().addItem(item2)
+
+            # If there is an xy snap point, return it
+            for snap in snaps:
+                if snap[1] == 'xy':
+                    return snap
+            # Otherwise, return the first x and the first y
+            x = None
+            y = None
+            if snaps[0][1] == 'x':
+                x = snaps[0][2]
+            elif snaps[0][1] == 'y':
+                y = snaps[0][2]
+
+            if x:
+                for snap in snaps:
+                    if snap[0] == snaps[0][0] and snap[1] == 'y':
+                        y = snap[2]
+            elif y:
+                for snap in snaps:
+                    if snap[0] == snaps[0][0] and snap[1] == 'x':
+                        x = snap[2]
+
+            if x and y:
+                return snaps[0][0], 'xy', QPointF(x.x(), y.y()), 0, 0
+            elif x:
+                return snaps[0][0], 'x', x, 0, 0
+            elif y:
+                return snaps[0][0], 'y', y, 0, 0
 
         return None
 

@@ -1,7 +1,7 @@
 import math
 import typing
 
-from PyQt6.QtCore import QPointF, Qt
+from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QBrush, QPainter, QPainterPath, QPen, QTransform
 from PyQt6.QtWidgets import QGraphicsPathItem, QStyleOptionGraphicsItem, QWidget
 
@@ -30,18 +30,11 @@ class CDBlockItem(QGraphicsPathItem):
         self._snaps = s
 
     def getSnaps(self):
-        return [self.mapToScene(s) for s in self._snaps]
+        return [self.mapToScene(p) for p in self._snaps]
 
-    def snapTo(self, index, point):
+    def snapTo(self, index, t, point):
         transform = QTransform().scale(self.scale(), self.scale()).rotate(self.rotation())
-        if self._snaps[index].x() == SNAP_MAX:
-            p = transform.map(QPointF(self.pos().x(), self._snaps[index].y()))
-        elif self._snaps[index].y() == SNAP_MAX:
-            p = transform.map(QPointF(self._snaps[index].x(), self.pos().y()))
-        else:
-            p = transform.map(self._snaps[index])
-
-        print(point - p)
+        p = transform.map(self._snaps[index])
         self.setPos(point - p)
 
     def shape(self) -> QPainterPath:
