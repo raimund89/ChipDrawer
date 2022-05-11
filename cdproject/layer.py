@@ -85,10 +85,10 @@ class CDLayer(QGraphicsItem):
     def boundingRect(self) -> QRectF:
         return QRectF(0, 0, 0, 0)
 
-    def getSnaps(self):
+    def getSnaps(self, excludes=None):
         snaps = []
         for item in self.childItems():
-            if item != self._substrate:
+            if item != self._substrate and item not in excludes:
                 snaps += item.getSnaps()
         return snaps
 

@@ -31,9 +31,6 @@ class CDProject(QGraphicsView):
         self.chip_height = None
         self.chip_width = None
         self.chip_layers = []
-        self.selected_items_old_positions = []
-        self.selection_moved = None
-        self.selected_items = []
         self.snaplist = []
         self.snapitems = []
         self.floating_item = None
@@ -41,6 +38,9 @@ class CDProject(QGraphicsView):
         self.chip_outline = None
         self.background = None
         self.undostack = None
+
+        self.movingselection = False
+        self.oldmovepos = None
 
         self.filename = None
 
@@ -94,12 +94,18 @@ class CDProject(QGraphicsView):
 
     @pyqtSlot()
     def signal_toolbox_clicked(self):
+        self.scene().clearSelection()
+        self.recalcSnaps()
+
         block = self.sender().block
         if block:
             self.scene().clearSelection()
             self.floating_item = block()
             self.floating_item.setZValue(1000)
             self.floating_item.setVisible(False)
+
+            # TODO: Set the floating item parameters (width, radius, etc) to a value that was used before.
+
             self.scene().addItem(self.floating_item)
             self.setItemPropsView()
         else:
@@ -239,7 +245,7 @@ class CDProject(QGraphicsView):
                          self.mapFromScene(0, self.chip_height), self.mapFromScene(self.chip_width, 0)]
 
         for layer in self.chip_layers:
-            snaps = layer.getSnaps()
+            snaps = layer.getSnaps(excludes=self.scene().selectedItems())
             self.snaplist += [self.mapFromScene(snap) for snap in snaps]
 
     def resizeEvent(self, event) -> None:
@@ -308,8 +314,9 @@ class CDProject(QGraphicsView):
             self.floating_item.setVisible(False)
 
     def mouseMoveEvent(self, event: QMouseEvent) -> None:
+        super().mouseMoveEvent(event)
+
         # TODO: Implement snapping of a selected item/group
-        # TODO: Implement snapping to many other snapping points, for vertical/horizontal alignment, etc
         if self.floating_item:
             # TODO: Implement that the item cannot leave the drawing area
             self.floating_item.setPos(self.mapToScene(event.position().toPoint()))
@@ -319,39 +326,40 @@ class CDProject(QGraphicsView):
             coords = self.getSnapCoordinates(flsnaps)
             if coords:
                 self.floating_item.snapTo(*coords[:3])
-            return
-        elif not self.scene().selectedItems() and event.buttons() == Qt.MouseButton.LeftButton and self.selected_items:
-            self.selected_items.clear()
-            self.selected_items_old_positions.clear()
-        elif self.scene().selectedItems() and not self.selected_items:
-            for item in self.scene().selectedItems():
-                self.selected_items.append(item)
-                self.selected_items_old_positions.append(item.pos())
-        elif self.selected_items and event.buttons() == Qt.MouseButton.LeftButton:
-            print("We need to snap!")
-            # First, get all current objects, including their position compared to the mouse
-            # Then, set the new position for all objects
-            # Get the snapping positions of all objects
-            # For each list of positions, ask whether one of their positions is a snapping one
-            # For the first hit, make sure everything snaps!
 
-        super().mouseMoveEvent(event)
+        elif self.scene().selectedItems() and self.movingselection:
+            # Make list of snap points
+            snaps = []
+            snapmap = []
+            for item in self.scene().selectedItems():
+                for i, isn in enumerate(item.getSnaps()):
+                    snaps.append(isn)
+                    snapmap.append((item, i))
+
+            coords = self.getSnapCoordinates(snaps)
+
+            if coords:
+                relative = [item.pos() - snapmap[coords[0]][0].pos() for item in self.scene().selectedItems()]
+
+                snapmap[coords[0]][0].snapTo(snapmap[coords[0]][1], *coords[1:3])
+
+                for i, item in enumerate(self.scene().selectedItems()):
+                    item.setPos(snapmap[coords[0]][0].pos() + relative[i])
 
     def mousePressEvent(self, event: QMouseEvent) -> None:
+        super().mousePressEvent(event)
+
         if self.floating_item:
             return
         elif self.scene().selectedItems():
-            # There are selected items. So save the current items and their current positions
-            self.selected_items.clear()
-            self.selected_items_old_positions.clear()
-
-            for item in self.scene().selectedItems():
-                self.selected_items.append(item)
-                self.selected_items_old_positions.append(item.pos())
-
-        super().mousePressEvent(event)
+            self.movingselection = True
+            self.oldmovepos = [item.pos() for item in self.scene().selectedItems()]
+            self.movemousepos = self.mapToScene(event.pos())
+            self.recalcSnaps()
 
     def mouseReleaseEvent(self, event: QMouseEvent) -> None:
+        super().mouseReleaseEvent(event)
+
         if self.floating_item:
             if event.button() == Qt.MouseButton.LeftButton:
                 self.undostack.push(CDCommandItemAdd(
@@ -361,26 +369,24 @@ class CDProject(QGraphicsView):
                 self.floating_item.setRotation((self.floating_item.rotation() + 90) % 360)
 
             self.setItemPropsView()
-        elif self.selected_items and event.button() == Qt.MouseButton.LeftButton:
-            print("Some items survived the drag event")
+        elif self.scene().selectedItems() and self.movingselection:
+            self.movingselection = False
+
             moved = False
-            for i, item in enumerate(self.selected_items):
-                if item.pos() != self.selected_items_old_positions[i]:
+            for i, item in enumerate(self.scene().selectedItems()):
+                if item.pos() != self.oldmovepos[i]:
                     moved = True
 
             if moved:
                 movelist = []
-                for i, item in enumerate(self.selected_items):
-                    movelist.append((item, self.selected_items_old_positions[i], item.pos()))
+                for i, item in enumerate(self.scene().selectedItems()):
+                    movelist.append((item, self.oldmovepos[i], item.pos()))
 
                 self.undostack.push(CDCommandItemsMove(self, movelist))
 
             self.setItemPropsView()
         else:
-            self.selected_items.clear()
-            self.selected_items_old_positions.clear()
-
-        super().mouseReleaseEvent(event)
+            self.recalcSnaps()
 
     def sort_snaps(self, e):
         return e[3]
@@ -465,6 +471,8 @@ class CDProject(QGraphicsView):
             elif snaps[0][1] == 'y':
                 y = snaps[0][2]
 
+            # TODO: This part is not working. We're constantly only getting either an x or an y, never both
+            # ===> This is due to the has_x and has_y parameters. I should just keep all
             if x:
                 for snap in snaps:
                     if snap[0] == snaps[0][0] and snap[1] == 'y':
@@ -586,9 +594,9 @@ class CDProject(QGraphicsView):
         self.floating_item = None
         self.snaplist = []
 
-        self.selected_items = []
-        self.selection_moved = False
-        self.selected_items_old_positions = []
+        # self.selected_items = []
+        # self.selection_moved = False
+        # self.selected_items_old_positions = []
 
         if initempty:
             self.initEmptyScene()

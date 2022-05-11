@@ -1,8 +1,6 @@
-import typing
-
 from PyQt6.QtCore import QPoint, QPointF, QRectF, Qt
-from PyQt6.QtGui import QBrush, QPainter, QPainterPath, QPen
-from PyQt6.QtWidgets import QApplication, QStyleOptionGraphicsItem, QWidget
+from PyQt6.QtGui import QPainterPath
+from PyQt6.QtWidgets import QApplication
 
 from buildingblocks.blockitem import CDBlockItem, DEFAULT_WIDTH, SQRT_2
 
@@ -84,18 +82,18 @@ class CDBlockStraight(CDBlockItem):
         b.setFlags(self.flags())
         return b
 
-    # TODO: Stuff to implement to allow resizing
-    def paint(self, painter: QPainter, option: 'QStyleOptionGraphicsItem',
-              widget: typing.Optional[QWidget] = ...) -> None:
-        super().paint(painter, option, widget)
-
-        if self.isSelected():
-            painter.setBrush(QBrush(Qt.GlobalColor.green))
-            painter.setPen(QPen(Qt.PenStyle.NoPen))
-
-            for handle, rect in self.handles:
-                if self.handleSelected is None or handle == self.handleSelected:
-                    painter.drawRect(rect)
+    # # TODO: Stuff to implement to allow resizing
+    # def paint(self, painter: QPainter, option: 'QStyleOptionGraphicsItem',
+    #           widget: typing.Optional[QWidget] = ...) -> None:
+    #     super().paint(painter, option, widget)
+    #
+    #     if self.isSelected():
+    #         painter.setBrush(QBrush(Qt.GlobalColor.green))
+    #         painter.setPen(QPen(Qt.PenStyle.NoPen))
+    #
+    #         for handle, rect in self.handles:
+    #             if self.handleSelected is None or handle == self.handleSelected:
+    #                 painter.drawRect(rect)
 
     #
     # def boundingRect(self) -> QRectF:
