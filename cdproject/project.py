@@ -3,7 +3,7 @@ import os
 
 import yaml
 from PyQt6.QtCore import QEvent, QModelIndex, QPointF, Qt, pyqtSlot
-from PyQt6.QtGui import QBrush, QEnterEvent, QIcon, QKeyEvent, QMouseEvent, QPainter, QPen, QPixmap
+from PyQt6.QtGui import QBrush, QEnterEvent, QIcon, QKeyEvent, QMouseEvent, QPainter, QPainterPath, QPen, QPixmap
 from PyQt6.QtWidgets import QApplication, QFileDialog, QGraphicsLineItem, QGraphicsRectItem, QGraphicsScene, \
     QGraphicsView, \
     QMessageBox
@@ -527,7 +527,9 @@ class CDProject(QGraphicsView):
 
     @pyqtSlot()
     def signal_select_all(self):
-        pass
+        p = QPainterPath()
+        p.addRect(self.background.rect())
+        self.scene().setSelectionArea(p)
 
     ###########################################################################
     #                                                                         #
