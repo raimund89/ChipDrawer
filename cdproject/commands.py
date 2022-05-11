@@ -459,3 +459,25 @@ class CDCommandItemChangeRadius(QUndoCommand):
             item.radius = self.old_radii[i]
 
         self.project.setItemPropsView()
+
+
+class CDCommandDeleteItems(QUndoCommand):
+    def __init__(self, project, items):
+        super().__init__(f"Delete items")
+
+        self.project = project
+        self.items = items
+        self.parents = [item.parentItem() for item in self.items]
+
+    def redo(self) -> None:
+        for item in self.items:
+            self.project.scene().removeItem(item)
+
+        self.project.recalcSnaps()
+
+    def undo(self) -> None:
+        for i, item in enumerate(self.items):
+            self.project.scene().addItem(item)
+            item.setParentItem(self.parents[i])
+
+        self.project.recalcSnaps()

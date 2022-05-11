@@ -522,7 +522,8 @@ class CDProject(QGraphicsView):
 
     @pyqtSlot()
     def signal_delete(self):
-        pass
+        if self.scene().selectedItems():
+            self.undostack.push(CDCommandDeleteItems(self, self.scene().selectedItems()))
 
     @pyqtSlot()
     def signal_select_all(self):
