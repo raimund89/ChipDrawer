@@ -96,5 +96,7 @@ if __name__ == "__main__":
 
     window = MainWindow(settings)
 
+    splash.finish(window)
+
     window.show()
     app.exec()
