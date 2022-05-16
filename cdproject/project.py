@@ -183,7 +183,6 @@ class CDProject(QGraphicsView):
 
     @pyqtSlot(int)
     def signal_layer_changed_background_material(self, m):
-        # TODO: In the TableView, show both colors (two squares)
         self.undostack.push(CDCommandLayerBackgroundMaterial(self, self._active_layer, self.theme.material(m)))
 
     @pyqtSlot()
@@ -319,7 +318,6 @@ class CDProject(QGraphicsView):
     def mouseMoveEvent(self, event: QMouseEvent) -> None:
         super().mouseMoveEvent(event)
 
-        # TODO: Implement snapping of a selected item/group
         if self.floating_item:
             # TODO: Implement that the item cannot leave the drawing area
             self.floating_item.setPos(self.mapToScene(event.position().toPoint()))
@@ -521,7 +519,53 @@ class CDProject(QGraphicsView):
                                                step=0.01)
                 if ok:
                     self.undostack.push(CDCommandItemChangeWidth(self, self.scene().selectedItems(), w))
-                    self.project.setItemPropsView()
+                    self.setItemPropsView()
+            case Qt.Key.Key_L:
+                if not self.scene().selectedItems():
+                    return
+
+                oldlength = None
+                for item in self.scene().selectedItems():
+                    if hasattr(item, 'length'):
+                        oldlength = item.length
+                        break
+
+                l, ok = QInputDialog.getDouble(self.parent().parent(),
+                                               "Set item(s) length",
+                                               "Length (mm)",
+                                               value=oldlength,
+                                               min=0.0,
+                                               decimals=2,
+                                               step=0.01)
+
+                if ok:
+                    self.undostack.push(CDCommandItemChangeLength(self,
+                                                                  [item for item in self.scene().selectedItems() if
+                                                                   hasattr(item, 'length')], l))
+                    self.setItemPropsView()
+            case Qt.Key.Key_R:
+                if not self.scene().selectedItems():
+                    return
+
+                oldradius = None
+                for item in self.scene().selectedItems():
+                    if hasattr(item, 'radius'):
+                        oldradius = item.radius
+                        break
+
+                r, ok = QInputDialog.getDouble(self.parent().parent(),
+                                               "Set item(s) radius",
+                                               "Radius (mm)",
+                                               value=oldradius,
+                                               min=0.0,
+                                               decimals=2,
+                                               step=0.01)
+
+                if ok:
+                    self.undostack.push(CDCommandItemChangeRadius(self,
+                                                                  [item for item in self.scene().selectedItems() if
+                                                                   hasattr(item, 'radius')], r))
+                    self.setItemPropsView()
 
     ###########################################################################
     #                                                                         #
