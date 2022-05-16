@@ -385,6 +385,8 @@ class CDProject(QGraphicsView):
                 self.undostack.push(CDCommandItemsMove(self, movelist))
 
             self.setItemPropsView()
+        elif self.scene().selectedItems():
+            self.setItemPropsView()
         else:
             self.recalcSnaps()
 
