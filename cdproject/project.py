@@ -910,4 +910,7 @@ class CDProject(QGraphicsView):
 
     @pyqtSlot()
     def signal_export_3d(self):
-        pass
+        if not self.parent().parent().viewer3d:
+            self.parent().parent().signal_show_3d()
+
+        self.parent().parent().viewer3d.save()

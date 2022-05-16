@@ -1,6 +1,7 @@
 import pyvista as pv
+from PIL import Image
 from PyQt6.QtGui import QCloseEvent
-from PyQt6.QtWidgets import QDialog, QFrame, QGraphicsRectItem, QVBoxLayout
+from PyQt6.QtWidgets import QDialog, QFileDialog, QFrame, QGraphicsRectItem, QVBoxLayout
 from pyvistaqt import QtInteractor
 
 from buildingblocks.blockitem import SQRT_2
@@ -11,7 +12,7 @@ class CD3DViewer(QDialog):
         super().__init__(parent)
 
         self.setModal(False)
-        self.setMinimumSize(800, 600)
+        self.setMinimumSize(1400, 900)
 
         self.project = project
 
@@ -95,3 +96,34 @@ class CD3DViewer(QDialog):
     def closeEvent(self, event: QCloseEvent) -> None:
         self.plotter.close()
         self.parent().viewer3d = None
+
+    def save(self):
+        filters = [
+            "Portable Network Graphics (*.png)",
+            "Joint Photographics Experts Group (*.jpg)",
+            "Windows Bitmap (*.bmp)",
+            "Wavefront OBJ (*.obj)",
+            "3D HTML (*.html)",
+            "Scalable Vector Graphics (*.svg)",
+            "Encapsulated PostScript (*.eps)",
+            "2D PDF (*.pdf)",
+            "LaTeX (*.tex)"
+        ]
+
+        file = QFileDialog.getSaveFileName(parent=self,
+                                           caption="Export 3D drawing",
+                                           directory=self.parent().settings.value("default_directory"),
+                                           filter=";;".join(filters))
+
+        if not file:
+            return
+
+        if file[1] in filters[0:3]:
+            img = Image.fromarray(self.plotter.screenshot(transparent_background=True))
+            img.save(file[0])
+        elif file[1] == filters[3]:
+            self.plotter.export_obj(file[0])
+        elif file[1] == filters[4]:
+            self.plotter.export_html(file[0])
+        elif file[1] in filters[5:9]:
+            self.plotter.save_graphic(file[0], title="Chip Drawer", raster=True)
