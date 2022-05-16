@@ -7,7 +7,7 @@ from PyQt6.QtWidgets import QPushButton, QSizePolicy, QSpacerItem
 from github import Github, RateLimitExceededException
 from yaml import load
 
-from buildingblocks.blocks import CDBlockBend, CDBlockStraight, CDBlockTaper
+from buildingblocks.blocks import CDBlockBend, CDBlockSBend, CDBlockStraight, CDBlockTaper
 
 try:
     from yaml import CLoader as Loader, CDumper as Dumper
@@ -18,7 +18,8 @@ BLOCKITEMS = {
     'mouse': None,
     'straight': CDBlockStraight,
     'bend': CDBlockBend,
-    'taper': CDBlockTaper
+    'taper': CDBlockTaper,
+    's-bend': CDBlockSBend
 }
 
 

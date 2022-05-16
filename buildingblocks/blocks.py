@@ -340,3 +340,97 @@ class CDBlockTaper(CDBlockItem):
         self.setPos(QPointF(data['position']['x'], data['position']['y']))
         self.setTransform(array2transform(data['transformation']))
 
+
+class CDBlockSBend(CDBlockItem):
+    DEFAULT_LENGTH = 2.0
+    DEFAULT_SIDE = 1.0
+
+    def __init__(self, w=None, l=None, s=None):
+        super().__init__()
+
+        self._width = DEFAULT_WIDTH if not w else w
+        self._side = self.DEFAULT_SIDE if not s else s
+        self._length = self.DEFAULT_LENGTH if not l else l
+
+        self.snaps = []
+
+        self.createPath()
+
+    @property
+    def width(self):
+        return self._width
+
+    @width.setter
+    def width(self, w):
+        self._width = w
+        self.createPath()
+
+    @property
+    def side(self):
+        return self._side
+
+    @side.setter
+    def side(self, s):
+        self._side = s
+        self.createPath()
+
+    @property
+    def length(self):
+        return self._length
+
+    @length.setter
+    def length(self, l):
+        self._length = l
+        self.createPath()
+
+    def rescale(self, scale: float) -> None:
+        self._length = self._length * scale
+        self.createPath()
+
+    def createPath(self):
+        self.snaps = [QPointF(-self._length / 2, -self._side / 2), QPointF(self._length / 2, self._side / 2)]
+
+        p = QPainterPath()
+        # TODO: Find a better method than the /3 for the control points
+        p.moveTo(-self._length / 2, -self._side / 2 - self._width / 2)
+        p.cubicTo(QPointF(self._width / 3, -self._side / 2 - self._width / 2),
+                  QPointF(self._width / 3, self._side / 2 - self._width / 2),
+                  QPointF(self._length / 2, self._side / 2 - self._width / 2))
+        p.lineTo(QPointF(self._length / 2, self._side / 2 + self._width / 2))
+        p.cubicTo(QPointF(-self._width / 3, self._side / 2 + self._width / 2),
+                  QPointF(-self._width / 3, -self._side / 2 + self._width / 2),
+                  QPointF(-self._length / 2, -self._side / 2 + self._width / 2))
+        p.lineTo(QPointF(-self._length / 2, -self._side / 2 - self._width / 2))
+
+        self.setPath(p)
+
+    def copy(self):
+        b = CDBlockSBend(self._width, self._length, self._side)
+        b.setBrush(self.brush())
+        b.setPos(self.pos())
+        b.setTransform(self.transform())
+        b.setFlags(self.flags())
+        return b
+
+    # TODO: Support to name the data blocks
+    def getData(self):
+        return {
+            'name': 'S-Bend',
+            'type': 's-bend',
+            'width': self._width,
+            'side': self._side,
+            'length': self._length,
+            'position': {
+                'x': self.pos().x(),
+                'y': self.pos().y()
+            },
+            'transformation': transform2array(self.transform())
+        }
+
+    def loadData(self, data):
+        # TODO: Implement name
+        self.width = data['width']
+        self.side = data['side']
+        self.length = data['length']
+        self.setPos(QPointF(data['position']['x'], data['position']['y']))
+        self.setTransform(array2transform(data['transformation']))
