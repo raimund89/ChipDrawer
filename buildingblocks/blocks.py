@@ -2,7 +2,7 @@ from PyQt6.QtCore import QPoint, QPointF, QRectF, Qt
 from PyQt6.QtGui import QPainterPath
 from PyQt6.QtWidgets import QApplication
 
-from buildingblocks.blockitem import CDBlockItem, DEFAULT_WIDTH, SQRT_2
+from buildingblocks.blockitem import CDBlockItem, DEFAULT_WIDTH, SQRT_2, array2transform, transform2array
 
 
 # TODO: Make pen size and handle size dependent on pixels, not on the scene coordinates
@@ -77,8 +77,7 @@ class CDBlockStraight(CDBlockItem):
         b = CDBlockStraight(self._width, self._length)
         b.setBrush(self.brush())
         b.setPos(self.pos())
-        b.setScale(self.scale())
-        b.setRotation(self.rotation())
+        b.setTransform(self.transform())
         b.setFlags(self.flags())
         return b
 
@@ -160,8 +159,7 @@ class CDBlockStraight(CDBlockItem):
                 'x': self.pos().x(),
                 'y': self.pos().y()
             },
-            'scale': self.scale(),
-            'rotation': self.rotation()
+            'transformation': transform2array(self.transform())
         }
 
     def loadData(self, data):
@@ -169,8 +167,7 @@ class CDBlockStraight(CDBlockItem):
         self.width = data['width']
         self.length = data['length']
         self.setPos(QPointF(data['position']['x'], data['position']['y']))
-        self.setScale(data['scale'])
-        self.setRotation(data['rotation'])
+        self.setTransform(array2transform(data['transformation']))
 
 
 class CDBlockBend(CDBlockItem):
@@ -229,8 +226,7 @@ class CDBlockBend(CDBlockItem):
         b = CDBlockBend(self._width, self._radius)
         b.setBrush(self.brush())
         b.setPos(self.pos())
-        b.setScale(self.scale())
-        b.setRotation(self.rotation())
+        b.setTransform(self.transform())
         b.setFlags(self.flags())
         return b
 
@@ -245,8 +241,7 @@ class CDBlockBend(CDBlockItem):
                 'x': self.pos().x(),
                 'y': self.pos().y()
             },
-            'scale': self.scale(),
-            'rotation': self.rotation()
+            'transformation': transform2array(self.transform())
         }
 
     def loadData(self, data):
@@ -254,8 +249,7 @@ class CDBlockBend(CDBlockItem):
         self.width = data['width']
         self.radius = data['radius']
         self.setPos(QPointF(data['position']['x'], data['position']['y']))
-        self.setScale(data['scale'])
-        self.setRotation(data['rotation'])
+        self.setTransform(array2transform(data['transformation']))
 
 
 class CDBlockTaper(CDBlockItem):
@@ -319,8 +313,7 @@ class CDBlockTaper(CDBlockItem):
         b = CDBlockTaper(self._width, self._width2, self._length)
         b.setBrush(self.brush())
         b.setPos(self.pos())
-        b.setScale(self.scale())
-        b.setRotation(self.rotation())
+        b.setTransform(self.transform())
         b.setFlags(self.flags())
         return b
 
@@ -336,8 +329,7 @@ class CDBlockTaper(CDBlockItem):
                 'x': self.pos().x(),
                 'y': self.pos().y()
             },
-            'scale': self.scale(),
-            'rotation': self.rotation()
+            'transformation': transform2array(self.transform())
         }
 
     def loadData(self, data):
@@ -346,5 +338,5 @@ class CDBlockTaper(CDBlockItem):
         self.width2 = data['width2']
         self.length = data['length']
         self.setPos(QPointF(data['position']['x'], data['position']['y']))
-        self.setScale(data['scale'])
-        self.setRotation(data['rotation'])
+        self.setTransform(array2transform(data['transformation']))
+

@@ -21,6 +21,12 @@ class CDBlockItem(QGraphicsPathItem):
 
         self._snaps = []
 
+    def setRotation(self, angle: float) -> None:
+        self.setTransform(self.transform().rotate(angle))
+
+    def setScale(self, scale: float) -> None:
+        self.setTransform(self.transform().scale(scale, scale))
+
     @property
     def snaps(self):
         return self._snaps
@@ -33,9 +39,7 @@ class CDBlockItem(QGraphicsPathItem):
         return [self.mapToScene(p) for p in self._snaps]
 
     def snapTo(self, index, t, point):
-        transform = QTransform().scale(self.scale(), self.scale()).rotate(self.rotation())
-        p = transform.map(self._snaps[index])
-        self.setPos(point - p)
+        self.setPos(point - self.transform().map(self._snaps[index]))
 
     def shape(self) -> QPainterPath:
         return self.path()
@@ -58,3 +62,18 @@ class CDBlockItem(QGraphicsPathItem):
             painter.drawPath(self.path())
 
             # TODO: Paint handles for resizing etc.
+
+    def flip(self, horizontal=True):
+        t = self.transform()
+        if horizontal:
+            self.setTransform(t.scale(-1, 1))
+        else:
+            self.setTransform(t.scale(1, -1))
+
+
+def transform2array(t: QTransform):
+    return [t.m11(), t.m12(), t.m13(), t.m21(), t.m22(), t.m23(), t.m31(), t.m32(), t.m33()]
+
+
+def array2transform(a):
+    return QTransform(*a)

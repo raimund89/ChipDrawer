@@ -568,6 +568,22 @@ class CDProject(QGraphicsView):
                                                                   [item for item in self.scene().selectedItems() if
                                                                    hasattr(item, 'radius')], r))
                     self.setItemPropsView()
+            case Qt.Key.Key_V:
+                if self.floating_item:
+                    self.floating_item.flip(False)
+                else:
+                    for item in self.scene().selectedItems():
+                        item.flip(False)
+
+                self.recalcSnaps()
+            case Qt.Key.Key_H:
+                if self.floating_item:
+                    self.floating_item.flip(True)
+                else:
+                    for item in self.scene().selectedItems():
+                        item.flip(True)
+
+                self.recalcSnaps()
 
     ###########################################################################
     #                                                                         #
