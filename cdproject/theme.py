@@ -20,8 +20,6 @@ class CDThemeList:
 
         self._themes = []
 
-        self.installThemes()
-
         self.loadThemes()
 
     def installThemes(self):

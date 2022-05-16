@@ -58,8 +58,6 @@ class CDBuildingBlockList:
             'custom': []
         }
 
-        self.installBlocks()
-
         if mainwindow:
             self.project = mainwindow.drawing_area
             self.box_standard = mainwindow.standard_blocks_layout.layout()
