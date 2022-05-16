@@ -358,6 +358,7 @@ class CDProject(QGraphicsView):
             self.recalcSnaps()
 
     def mouseReleaseEvent(self, event: QMouseEvent) -> None:
+        # TODO: Add ability to rotate a selection with right mouse key
         super().mouseReleaseEvent(event)
 
         if self.floating_item:
@@ -569,6 +570,8 @@ class CDProject(QGraphicsView):
                                                                    hasattr(item, 'radius')], r))
                     self.setItemPropsView()
             case Qt.Key.Key_V:
+                # TODO: Make flipping an undostack command.
+                # TODO: Implement flipping of a complete selection
                 if self.floating_item:
                     self.floating_item.flip(False)
                 else:
@@ -577,6 +580,8 @@ class CDProject(QGraphicsView):
 
                 self.recalcSnaps()
             case Qt.Key.Key_H:
+                # TODO: Make flipping an undostack command.
+                # TODO: Implement flipping of a complete selection
                 if self.floating_item:
                     self.floating_item.flip(True)
                 else:
