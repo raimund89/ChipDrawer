@@ -2,8 +2,9 @@ import math
 import os
 
 import yaml
-from PyQt6.QtCore import QEvent, QModelIndex, QPointF, Qt, pyqtSlot
+from PyQt6.QtCore import QEvent, QModelIndex, QPointF, QRect, QRectF, QSize, Qt, pyqtSlot
 from PyQt6.QtGui import QBrush, QEnterEvent, QIcon, QKeyEvent, QMouseEvent, QPainter, QPainterPath, QPen, QPixmap
+from PyQt6.QtSvg import QSvgGenerator
 from PyQt6.QtWidgets import QApplication, QFileDialog, QGraphicsLineItem, QGraphicsRectItem, QGraphicsScene, \
     QGraphicsView, \
     QMessageBox
@@ -777,3 +778,70 @@ class CDProject(QGraphicsView):
         elif self.scene().selectedItems():
             self.undostack.push(
                 CDCommandItemChangeLength(self, [i for i in self.scene().selectedItems() if hasattr(i, 'length')], v))
+
+    @pyqtSlot()
+    def signal_export_2d(self):
+        filters = [
+            "Portable Network Graphics (*.png)",
+            "Joint Photographics Experts Group (*.jpg)",
+            "Windows Bitmap (*.bmp)",
+            "Scalable Vector Graphics (*.svg)"
+        ]
+        file = QFileDialog.getSaveFileName(parent=self.parent().parent(),
+                                           caption="Export 2D Bitmap or Vector",
+                                           directory=self.parent().parent().settings.value("default_directory"),
+                                           filter=";;".join(filters))
+        if not file:
+            return
+
+        # Hide the floating item
+        if self.floating_item:
+            wasvisible = self.floating_item.isVisible()
+            self.floating_item.setVisible(False)
+
+        # Clear the snap lines
+        for item in self.snapitems:
+            item.setVisible(False)
+
+        # Clear the selection
+        wasselected = self.scene().selectedItems()
+        for item in wasselected:
+            item.setSelected(False)
+
+        if file[1] in filters[0:3]:
+            print("Bitmap!")
+            r = QRectF(0, 0, 2000, 2000 * (self.scene().sceneRect().height() / self.scene().sceneRect().width()))
+            pm = QPixmap(r.size().toSize())
+            painter = QPainter(pm)
+            painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+            self.scene().render(painter, r, self.scene().sceneRect(), Qt.AspectRatioMode.KeepAspectRatio)
+            painter.end()
+
+            pm.save(file[0])
+        else:
+            svggen = QSvgGenerator()
+            svggen.setFileName(file[0])
+            svggen.setResolution(1)
+            svggen.setSize(QSize(self.chip_width + 2 * self.chip_margin, self.chip_height + 2 * self.chip_margin))
+            svggen.setViewBox(
+                QRect(0, 0, self.chip_width + 2 * self.chip_margin, self.chip_height + 2 * self.chip_margin))
+            painter = QPainter()
+            painter.begin(svggen)
+            self.scene().render(painter)
+            painter.end()
+
+        # Show the floating item again
+        if self.floating_item:
+            self.floating_item.setVisible(wasvisible)
+
+        # Return the snap items
+        for item in self.snapitems:
+            item.setVisible(True)
+
+        # Restore the selection
+        for item in wasselected:
+            item.setSelected(True)
+
+    @pyqtSlot()
+    def signal_export_3d(self):
+        pass

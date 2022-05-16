@@ -372,8 +372,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>98</width>
-              <height>89</height>
+              <width>360</width>
+              <height>384</height>
              </rect>
             </property>
             <attribute name="label">
@@ -393,8 +393,8 @@
                  <rect>
                   <x>0</x>
                   <y>0</y>
-                  <width>98</width>
-                  <height>28</height>
+                  <width>340</width>
+                  <height>364</height>
                  </rect>
                 </property>
                 <property name="styleSheet">
@@ -521,6 +521,18 @@
      </property>
      <addaction name="action_None"/>
     </widget>
+    <widget class="QMenu" name="menu_Export">
+     <property name="title">
+      <string>&amp;Export</string>
+     </property>
+     <addaction name="action_Export_2D"/>
+     <addaction name="action_Export_3D"/>
+    </widget>
+    <widget class="QMenu" name="menu_Print">
+     <property name="title">
+      <string>&amp;Print</string>
+     </property>
+    </widget>
     <addaction name="action_New"/>
     <addaction name="action_Open"/>
     <addaction name="menuOpen_Recent"/>
@@ -528,8 +540,8 @@
     <addaction name="action_Save"/>
     <addaction name="action_SaveAs"/>
     <addaction name="separator"/>
-    <addaction name="action_Export"/>
-    <addaction name="action_Print"/>
+    <addaction name="menu_Export"/>
+    <addaction name="menu_Print"/>
     <addaction name="separator"/>
     <addaction name="action_Exit"/>
    </widget>
@@ -604,6 +616,9 @@
    <addaction name="action_Select_All"/>
    <addaction name="separator"/>
    <addaction name="action_3D"/>
+   <addaction name="separator"/>
+   <addaction name="action_Export_2D"/>
+   <addaction name="action_Export_3D"/>
   </widget>
   <action name="action_New">
    <property name="icon">
@@ -647,19 +662,6 @@
    </property>
    <property name="shortcut">
     <string>F12</string>
-   </property>
-  </action>
-  <action name="action_Export">
-   <property name="text">
-    <string>&amp;Export</string>
-   </property>
-  </action>
-  <action name="action_Print">
-   <property name="text">
-    <string>&amp;Print</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+P</string>
    </property>
   </action>
   <action name="action_Exit">
@@ -725,6 +727,21 @@
     <string>&amp;About</string>
    </property>
   </action>
+  <action name="action_Export_2D">
+   <property name="text">
+    <string>Export 2D</string>
+   </property>
+  </action>
+  <action name="action_Export_3D">
+   <property name="text">
+    <string>Export 3D</string>
+   </property>
+  </action>
+  <action name="action_Export_Project">
+   <property name="text">
+    <string>Export Project</string>
+   </property>
+  </action>
  </widget>
  <customwidgets>
   <customwidget>
@@ -755,6 +772,8 @@
     <slot>signal_item_changed_radius()</slot>
     <slot>signal_item_changed_length()</slot>
     <slot>signal_item_changed_endwidth()</slot>
+    <slot>signal_export_2d()</slot>
+    <slot>signal_export_3d()</slot>
    </slots>
   </customwidget>
  </customwidgets>
@@ -1097,22 +1116,6 @@
    </hints>
   </connection>
   <connection>
-   <sender>action_Export</sender>
-   <signal>triggered()</signal>
-   <receiver>MainWindow</receiver>
-   <slot>signal_export()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>-1</x>
-     <y>-1</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>825</x>
-     <y>509</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
    <sender>action_Open</sender>
    <signal>triggered()</signal>
    <receiver>MainWindow</receiver>
@@ -1237,6 +1240,54 @@
     <hint type="destinationlabel">
      <x>835</x>
      <y>530</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>action_Export_2D</sender>
+   <signal>triggered()</signal>
+   <receiver>drawing_area</receiver>
+   <slot>signal_export_2d()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>835</x>
+     <y>530</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>action_Export_3D</sender>
+   <signal>triggered()</signal>
+   <receiver>drawing_area</receiver>
+   <slot>signal_export_3d()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>835</x>
+     <y>530</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>action_Export_Project</sender>
+   <signal>triggered()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>signal_export()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>825</x>
+     <y>509</y>
     </hint>
    </hints>
   </connection>
