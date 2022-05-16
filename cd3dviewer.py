@@ -98,6 +98,7 @@ class CD3DViewer(QDialog):
         self.parent().viewer3d = None
 
     def save(self):
+        # TODO: Fix .obj. Add .stl, .step, .wrl, .u3d
         filters = [
             "Portable Network Graphics (*.png)",
             "Joint Photographics Experts Group (*.jpg)",

@@ -106,7 +106,6 @@ class MainWindow(QMainWindow):
         self.drawing_area.project_new()
 
     def closeEvent(self, event: QCloseEvent) -> None:
-        # TODO: Replace this entire thingy with a) checking if anything needs to be saved and b) then closing everything
         if not self.undostack.isClean():
             # The current project is not saved
             d = QMessageBox.question(self, "Chip Drawer", "Do you want to save the project before closing it?",
