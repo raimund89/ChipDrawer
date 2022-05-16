@@ -7,7 +7,7 @@ from PyQt6.QtGui import QBrush, QEnterEvent, QIcon, QKeyEvent, QMouseEvent, QPai
 from PyQt6.QtSvg import QSvgGenerator
 from PyQt6.QtWidgets import QApplication, QFileDialog, QGraphicsLineItem, QGraphicsRectItem, QGraphicsScene, \
     QGraphicsView, \
-    QMessageBox
+    QInputDialog, QMessageBox
 from yaml import CLoader
 
 from cdproject.commands import *
@@ -242,6 +242,7 @@ class CDProject(QGraphicsView):
         self.recalcSnaps()
 
     def recalcSnaps(self):
+        # TODO: Also collect the original scene location, because we need to do subpixel mapping
         self.snaplist = [self.mapFromScene(0, 0), self.mapFromScene(self.chip_width, self.chip_height),
                          self.mapFromScene(0, self.chip_height), self.mapFromScene(self.chip_width, 0)]
 
@@ -306,6 +307,7 @@ class CDProject(QGraphicsView):
                 self.setItemPropsView()
 
     def enterEvent(self, event: QEnterEvent) -> None:
+        self.setFocus()
         if self.floating_item:
             self.floating_item.setVisible(True)
             self.floating_item.setPos(self.mapToScene(event.position().toPoint()))
@@ -355,7 +357,6 @@ class CDProject(QGraphicsView):
         elif self.scene().selectedItems():
             self.movingselection = True
             self.oldmovepos = [item.pos() for item in self.scene().selectedItems()]
-            self.movemousepos = self.mapToScene(event.pos())
             self.recalcSnaps()
 
     def mouseReleaseEvent(self, event: QMouseEvent) -> None:
@@ -388,6 +389,11 @@ class CDProject(QGraphicsView):
             self.setItemPropsView()
         else:
             self.recalcSnaps()
+
+        for item in self.snapitems:
+            self.scene().removeItem(item)
+
+        self.snapitems.clear()
 
     def sort_snaps(self, e):
         return e[3]
@@ -502,6 +508,20 @@ class CDProject(QGraphicsView):
                 print("Up key pressed")
             case Qt.Key.Key_Down:
                 print("Down key pressed")
+            case Qt.Key.Key_W:
+                if not self.scene().selectedItems():
+                    return
+
+                w, ok = QInputDialog.getDouble(self.parent().parent(),
+                                               "Set item(s) width",
+                                               "Width (mm)",
+                                               value=self.scene().selectedItems()[0].width,
+                                               min=0.0,
+                                               decimals=2,
+                                               step=0.01)
+                if ok:
+                    self.undostack.push(CDCommandItemChangeWidth(self, self.scene().selectedItems(), w))
+                    self.project.setItemPropsView()
 
     ###########################################################################
     #                                                                         #
