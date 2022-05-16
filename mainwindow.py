@@ -53,7 +53,8 @@ class MainWindow(QMainWindow):
 
     @pyqtSlot()
     def signal_show_3d(self):
-        self.viewer3d = CD3DViewer(self, project=self.drawing_area)
+        if not self.viewer3d:
+            self.viewer3d = CD3DViewer(self, project=self.drawing_area)
 
     @pyqtSlot()
     def signal_save(self):

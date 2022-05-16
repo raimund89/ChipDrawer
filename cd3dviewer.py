@@ -94,3 +94,4 @@ class CD3DViewer(QDialog):
 
     def closeEvent(self, event: QCloseEvent) -> None:
         self.plotter.close()
+        self.parent().viewer3d = None
